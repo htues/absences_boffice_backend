@@ -1,0 +1,45 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    url: jdbc:postgresql://absencesdb:5432/${DB_NAME:absences_dev}
+    username: ${DB_USERNAME:app}
+    password: ${DB_PASSWORD:change_me}
+
+  hikari:
+    minimum-idle: 2
+    maximum-pool-size: 10
+    connection-timeout: 30000
+    idle-timeout: 600000
+    max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    com.zaxxer.hikari: DEBUG
+    # Uncomment only if you really want parameter binding noise (it gets loud)
+    # org.hibernate.orm.jdbc.bind: TRACE
+
+rate:
+  roles:
+    ADMIN:
+      capacity: 500
+      refill-rate: 50
+      refill-duration: PT30S
+    SUPERVISOR:
+      capacity: 200
+      refill-rate: 20
+      refill-duration: PT1M
+    USER:
+      capacity: 100
+      refill-rate: 10
+      refill-duration: PT1M

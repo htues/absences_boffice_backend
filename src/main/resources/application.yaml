@@ -1,3 +1,38 @@
 spring:
   application:
-    name: absencesbobe
+    name: absences-backoffice
+  flyway:
+    enabled: true
+
+server:
+  port: ${SERVER_PORT:8080}
+
+logging:
+  level:
+    root: INFO
+
+version:
+  api:
+    current: v1
+    supported: [v1, v2]
+    legacy-support: true
+    headers:
+      enabled: true
+      version-header: X-API-Version
+      build-header: X-Build-Version
+
+pagination:
+  default-page-size: 5
+  max-page-size: 100
+  method: ${PAGINATION_METHOD:offset}
+
+rate:
+  limiter:
+    default:
+      capacity: 100
+      refill-rate: 10
+      refill-duration: PT1M
+
+app:
+  environment: ${APP_ENV:dev}
+

@@ -1,0 +1,57 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:absencesdb}:${DB_PORT:5432}/${DB_NAME:absences_production}
+    username: ${DB_USERNAME:app}
+    password: ${DB_PASSWORD:change_me}
+
+  hikari:
+    minimum-idle: 2
+    maximum-pool-size: 10
+    connection-timeout: 30000
+    initialization-fail-timeout: 0
+    idle-timeout: 600000
+    max-lifetime: 1800000
+    validation-timeout: 5000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: false
+
+logging:
+  level:
+    root: INFO
+    com.zaxxer.hikari: WARN
+    org.hibernate: WARN
+
+rate:
+  endpointsByVersion:
+    v1:
+      "/companies":
+        capacity: 20
+        refill-rate: 2
+        refill-duration: PT2M
+    v2:
+      "/companies":
+        capacity: 10
+        refill-rate: 1
+        refill-duration: PT1M
+
+  roles:
+    ADMIN:
+      capacity: 200
+      refill-rate: 20
+      refill-duration: PT30S
+    USER:
+      capacity: 100
+      refill-rate: 10
+      refill-duration: PT1M
+
+app:
+  environment: prod

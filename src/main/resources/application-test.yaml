@@ -1,0 +1,48 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  flyway:
+    enabled: true
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+logging:
+  level:
+    root: WARN
+    org.hibernate: WARN
+
+rate:
+  limiter:
+    default:
+      capacity: 10000
+      refill-rate: 1000
+      refill-duration: PT1S
+  roles:
+    ADMIN:
+      capacity: 10000
+      refill-rate: 1000
+      refill-duration: PT1S
+    SUPERVISOR:
+      capacity: 10000
+      refill-rate: 1000
+      refill-duration: PT1S
+    USER:
+      capacity: 10000
+      refill-rate: 1000
+      refill-duration: PT1S
+
+seed:
+  development: false
+  production: false
+
+test:
+  user:
+    email: test@example.com
+    password: ${TEST_USER_PASSWORD:test_password}
+
+app:
+  environment: test
