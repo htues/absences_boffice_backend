@@ -10,7 +10,6 @@ import org.springframework.data.annotation.LastModifiedBy;
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
@@ -24,35 +23,50 @@ public class CompanyJpaEntity {
     @ToString.Include
     private Long id;
 
+    @Setter
     @Column(name = "name", nullable = false, unique = true, length = 50)
     @ToString.Include
     private String name;
 
+    @Setter
     @Column(name = "description", nullable = false, length = 200)
     private String description;
 
+    @Setter
     @Column(name = "address", nullable = false, length = 100)
     private String address;
 
+    @Setter
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
 
+    @Setter
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
 
     @CreatedBy
-    @Column
+    @Column(name = "created_by", updatable = false)
     private String createdBy;
 
     @LastModifiedBy
-    @Column
+    @Column(name = "last_modified_by")
     private String lastModifiedBy;
 
     @CreationTimestamp
-    @Column
+    @Column(name = "created_date", updatable = false)
     private LocalDateTime createdDate;
 
     @UpdateTimestamp
-    @Column
+    @Column(name = "last_modified_date")
     private LocalDateTime lastModifiedDate;
+
+    // Optional: domain-friendly helpers (keeps calling code from touching fields directly)
+    public void markDeleted() {
+        this.isDeleted = true;
+        this.isActive = false;
+    }
+
+    public void deactivate() {
+        this.isActive = false;
+    }
 }
