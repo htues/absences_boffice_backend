@@ -28,6 +28,10 @@ public class Company {
         return new Company(null, name, description, address, true, false);
     }
 
+    public static Company rehydrate(Long id, String name, String description, String address, boolean active, boolean deleted) {
+        return new Company(id, name, description, address, active, deleted);
+    }
+
     public void updateDetails(String name, String description, String address) {
         this.name = requireText(name, "name");
         this.description = requireText(description, "description");
