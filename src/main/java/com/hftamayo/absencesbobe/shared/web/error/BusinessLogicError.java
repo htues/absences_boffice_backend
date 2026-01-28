@@ -1,49 +1,24 @@
 package com.hftamayo.absencesbobe.shared.web.error;
 
-import com.hftamayo.absencesbobe.shared.web.error.exception.BusinessError;
-import com.hftamayo.java.boabsenses.utilities.constants.ApiResponseMessages;
+import com.hftamayo.absencesbobe.shared.web.constants.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * Represents a business logic violation - a flaw in the design and implementation
- * that allows unintended behavior when users interact with the application in unexpected ways.
+ * Represents a business logic violation (domain rule/workflow/constraint violation).
  *
- * <p>Business logic errors occur when:
+ * <p><strong>Fields:</strong>
  * <ul>
- *   <li>Users interact with the application in ways developers didn't anticipate</li>
- *   <li>Flawed assumptions about user behavior lead to rule violations</li>
- *   <li>Domain-specific workflows or constraints are violated</li>
- *   <li>State transitions or business rules are bypassed</li>
+ *   <li><code>errorCode</code>: machine-readable code (e.g., "INVALID_STATE", "WORKFLOW_VIOLATION")</li>
+ *   <li><code>operation</code>: operation being performed (e.g., "CREATE", "UPDATE", "DELETE")</li>
+ *   <li><code>resource</code>: resource type affected (e.g., "Company")</li>
+ *   <li><code>reason</code>: short explanation of the rule being violated</li>
+ *   <li><code>message</code>: detailed human-readable description (used as <code>detail</code>)</li>
  * </ul>
- *
- * <p><strong>When to use BusinessLogicError:</strong>
- * <ul>
- *   <li>Domain rule violations (e.g., "Cannot delete company with active employees")</li>
- *   <li>Workflow state violations (e.g., "Cannot activate deleted company without restoration")</li>
- *   <li>Business constraint violations (e.g., "Operation not allowed in current state")</li>
- *   <li>Unexpected interaction patterns that violate business assumptions</li>
- * </ul>
- *
- * <p><strong>When NOT to use BusinessLogicError:</strong>
- * <ul>
- *   <li>Input format/type validation → use {@link ValidationError}</li>
- *   <li>Runtime request parameter issues (e.g., page out of bounds) → use {@link ValidationError}</li>
- *   <li>Resource not found → use {@link ResourceNotFoundError}</li>
- *   <li>Duplicate resources → use {@link DuplicateResourceError}</li>
- * </ul>
- *
- * <p>Reference: <a href="https://portswigger.net/web-security/logic-flaws">PortSwigger - Business Logic Vulnerabilities</a>
- *
- * @param errorCode Machine-readable error code (e.g., "INVALID_STATE", "WORKFLOW_VIOLATION")
- * @param operation The operation being performed (e.g., "CREATE", "UPDATE", "DELETE")
- * @param resource The resource type affected (e.g., "Company", "User")
- * @param reason Short description of why the business rule was violated
- * @param message Detailed human-readable message explaining the violation
  */
 @AllArgsConstructor
 @Getter
-public class BusinessLogicError implements BusinessError {
+public class BusinessLogicError implements ErrorLogEventDescriptor {
     private final String errorCode;
     private final String operation;
     private final String resource;
@@ -51,18 +26,8 @@ public class BusinessLogicError implements BusinessError {
     private final String message;
 
     @Override
-    public String getMessage() {
-        return message;
-    }
-
-    @Override
-    public String getTitle() {
-        return ApiResponseMessages.BUSINESS_LOGIC_ERROR.getMessageKey();
-    }
-
-    @Override
-    public int getStatus() {
-        return ApiResponseMessages.BUSINESS_LOGIC_ERROR.getStatusCode();
+    public ErrorCode getType() {
+        return ErrorCode.BUSINESS_LOGIC_ERROR;
     }
 
     @Override
@@ -71,16 +36,16 @@ public class BusinessLogicError implements BusinessError {
     }
 
     @Override
-    public String getCode() {
-        return errorCode != null ? errorCode : ApiResponseMessages.BUSINESS_LOGIC_ERROR.getMessageKey();
+    public String getErrorCode() {
+        return errorCode;
     }
 
     /**
      * Factory method for creating a business logic error for invalid state violations.
      * Use when an entity is in a state that violates business rules.
      *
-     * @param operation The operation being attempted
-     * @param resource The resource type
+     * @param operation        The operation being attempted
+     * @param resource         The resource type
      * @param stateDescription Description of the invalid state
      * @return BusinessLogicError instance
      */
@@ -98,8 +63,8 @@ public class BusinessLogicError implements BusinessError {
      * Factory method for creating a business logic error for workflow violations.
      * Use when an operation violates a business workflow or process.
      *
-     * @param operation The operation being attempted
-     * @param resource The resource type
+     * @param operation           The operation being attempted
+     * @param resource            The resource type
      * @param workflowDescription Description of the workflow violation
      * @return BusinessLogicError instance
      */
@@ -117,8 +82,8 @@ public class BusinessLogicError implements BusinessError {
      * Factory method for creating a business logic error for constraint violations.
      * Use when a business constraint or limit is exceeded.
      *
-     * @param operation The operation being attempted
-     * @param resource The resource type
+     * @param operation             The operation being attempted
+     * @param resource              The resource type
      * @param constraintDescription Description of the constraint violation
      * @return BusinessLogicError instance
      */
@@ -137,4 +102,5 @@ public class BusinessLogicError implements BusinessError {
         return String.format("Error Code: %s, Operation: %s, Resource: %s, Reason: %s, Message: %s",
                 errorCode, operation, resource, reason, message);
     }
+
 }

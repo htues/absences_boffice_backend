@@ -1,7 +1,7 @@
 package com.hftamayo.absencesbobe.shared.web.error;
 
-import com.hftamayo.absencesbobe.shared.web.error.exception.BusinessError;
-import com.hftamayo.java.boabsenses.utilities.constants.ApiResponseMessages;
+import com.hftamayo.absencesbobe.shared.web.constants.ErrorCode;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,33 +9,11 @@ public record ValidationError(
         Map<String, String> inputFields,
         String[] validationErrors,
         String message
-) implements BusinessError {
-    @Override
-    public String toString() {
-        if (inputFields != null && !inputFields.isEmpty()) {
-            StringBuilder sb = new StringBuilder("Validation failed for fields:");
-            inputFields.forEach((field, error) -> sb.append(String.format(" [%s]: %s;", field, error)));
-            return sb.toString();
-        }
-        if (validationErrors != null && validationErrors.length > 0) {
-            return String.format("Validation failed: %s", String.join(", ", validationErrors));
-        }
-        return message != null ? message : "Validation failed.";
-    }
+) implements ErrorLogEventDescriptor {
 
     @Override
-    public String getMessage() {
-        return message;
-    }
-
-    @Override
-    public String getTitle() {
-        return ApiResponseMessages.VALIDATION_ERROR.getMessageKey();
-    }
-
-    @Override
-    public int getStatus() {
-        return ApiResponseMessages.VALIDATION_ERROR.getStatusCode();
+    public ErrorCode getType() {
+        return ErrorCode.VALIDATION_ERROR;
     }
 
     @Override
@@ -44,19 +22,30 @@ public record ValidationError(
     }
 
     @Override
-    public String getCode() {
-        return ApiResponseMessages.VALIDATION_ERROR.getMessageKey();
+    public String toString() {
+        Map<String, String> fields = inputFields != null ? inputFields : Map.of();
+        if (!fields.isEmpty()) {
+            StringBuilder sb = new StringBuilder("Validation failed for fields:");
+            fields.forEach((field, error) -> sb.append(String.format(" [%s]: %s;", field, error)));
+            return sb.toString();
+        }
+
+        if (validationErrors != null && validationErrors.length > 0) {
+            return "Validation failed: " + String.join(", ", validationErrors);
+        }
+
+        return message != null ? message : "Validation failed.";
     }
 
     public Map<String, Object> getDetails() {
         Map<String, Object> details = new HashMap<>();
-        details.put("inputFields", inputFields);
+        details.put("inputFields", inputFields != null ? inputFields : Map.of());
         details.put("validationErrors", validationErrors);
         details.put("message", message);
         return details;
     }
 
     public Map<String, String> getInputFields() {
-        return inputFields != null ? inputFields : new HashMap<>();
+        return inputFields != null ? inputFields : Map.of();
     }
 }
