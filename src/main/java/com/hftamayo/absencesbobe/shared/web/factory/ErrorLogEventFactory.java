@@ -1,22 +1,22 @@
 package com.hftamayo.absencesbobe.shared.web.factory;
 
 import com.hftamayo.absencesbobe.shared.web.correlation.CorrelationUtils;
-import com.hftamayo.absencesbobe.shared.web.dto.ApiErrorDto;
-import com.hftamayo.absencesbobe.shared.web.error.ApiErrorDescriptor;
+import com.hftamayo.absencesbobe.shared.web.dto.ErrorLogEventDto;
+import com.hftamayo.absencesbobe.shared.web.error.ErrorLogEventDescriptor;
 import jakarta.servlet.http.HttpServletRequest;
 
-public final class ApiErrorFactory {
+public final class ErrorLogEventFactory {
 
-    private ApiErrorFactory() {
+    private ErrorLogEventFactory() {
     }
 
-    public static ApiErrorDto mapErrorLogEvent(Class<?> controllerClass,
-                                               ApiErrorDescriptor error,
-                                               HttpServletRequest request) {
+    public static ErrorLogEventDto mapErrorLogEvent(Class<?> controllerClass,
+                                                    ErrorLogEventDescriptor error,
+                                                    HttpServletRequest request) {
         String instance = CorrelationUtils.getInstance(controllerClass, request);
         String correlationId = CorrelationUtils.getCorrelationId(request);
 
-        return ApiErrorDto.builder()
+        return ErrorLogEventDto.builder()
                 .title(error.getTitle())
                 .statusCode(error.getStatusCode())
                 .detail(error.getDetail())

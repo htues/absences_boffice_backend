@@ -3,7 +3,7 @@ package com.hftamayo.absencesbobe.shared.web.dto;
 import lombok.Builder;
 
 @Builder
-public record ApiErrorDto(
+public record ErrorLogEventDto(
         String title,
         int statusCode,
         String detail,

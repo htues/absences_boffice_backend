@@ -1,6 +1,6 @@
 package com.hftamayo.absencesbobe.shared.web.error;
 
-public interface ApiErrorDescriptor {
+public interface ErrorLogEventDescriptor {
     int getStatusCode();
     String getTitle();
     String getDetail();
