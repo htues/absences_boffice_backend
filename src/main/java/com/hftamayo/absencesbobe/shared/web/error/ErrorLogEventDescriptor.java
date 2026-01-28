@@ -1,8 +1,21 @@
 package com.hftamayo.absencesbobe.shared.web.error;
 
+import com.hftamayo.absencesbobe.shared.web.constants.ErrorCode;
+
 public interface ErrorLogEventDescriptor {
-    int getStatusCode();
-    String getTitle();
+    ErrorCode getType();
+
     String getDetail();
-    String getErrorCode(); //machine code
+
+    default String getErrorCode() {
+        return getType().name();
+    };    // machine code (or derive from getType())
+
+    default int getStatusCode() {
+        return getType().getStatusCode();
+    }
+
+    default String getTitle() {
+        return getType().getMessageKey();
+    }
 }
