@@ -3,9 +3,9 @@ package com.hftamayo.absencesbobe.shared.web.dto;
 import lombok.Builder;
 
 @Builder
-public record ErrorDetailDto(
+public record ApiErrorDto(
         String title,
-        int status,
+        int statusCode,
         String detail,
         String errorCode,
         String instance,
