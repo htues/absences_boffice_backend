@@ -1,11 +1,10 @@
 package com.hftamayo.absencesbobe.shared.web.constants;
 
-import lombok.AllArgsConstructor;
+import com.hftamayo.absencesbobe.shared.web.response.ApiResponseDescriptor;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
-public enum ErrorCode implements ApiAnswersDescriptor {
+public enum ErrorCode implements ApiResponseDescriptor {
     BUSINESS_LOGIC_ERROR(400, "BUSINESS_LOGIC_VIOLATION"),
     UNAUTHORIZED(401, "UNAUTHORIZED_ACCESS"),
     FORBIDDEN(403, "FORBIDDEN_ACCESS"),
@@ -15,7 +14,20 @@ public enum ErrorCode implements ApiAnswersDescriptor {
     RATE_LIMITED(429, "RATE_LIMIT_EXCEEDED"),
     UNKNOWN_ERROR(500, "UNKNOWN_ERROR");
 
+    private static final String DEFAULT_RESPONSE_TYPE = "error";
+
+    private final String responseType;
     private final int statusCode;
     private final String messageKey;
+
+    ErrorCode(int statusCode, String messageKey) {
+        this(DEFAULT_RESPONSE_TYPE, statusCode, messageKey);
+    }
+
+    ErrorCode(String responseType, int statusCode, String messageKey) {
+        this.responseType = responseType;
+        this.statusCode = statusCode;
+        this.messageKey = messageKey;
+    }
 
 }

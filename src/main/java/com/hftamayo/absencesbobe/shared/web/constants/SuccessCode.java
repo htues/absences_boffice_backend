@@ -1,16 +1,33 @@
 package com.hftamayo.absencesbobe.shared.web.constants;
 
-import lombok.AllArgsConstructor;
+import com.hftamayo.absencesbobe.shared.web.response.ApiResponseDescriptor;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
-public enum SuccessCode implements ApiAnswersDescriptor {
+public enum SuccessCode implements ApiResponseDescriptor {
     CREATED(201, "ENTITY_CREATED"),
-    UPDATED(200, "ENTITY_UPDATED"),
-    DELETED(200, "ENTITY_DELETED"),
-    READ(200, "ENTITY_RETRIEVED");
+    UPDATED("ENTITY_UPDATED"),
+    DELETED("ENTITY_DELETED"),
+    READ("ENTITY_RETRIEVED");
 
+    private static final String DEFAULT_RESPONSE_TYPE = "success";
+    private static final int DEFAULT_STATUS_CODE = 200;
+
+    private final String responseType;
     private final int statusCode;
     private final String messageKey;
+
+    SuccessCode(String messageKey) {
+        this(DEFAULT_STATUS_CODE, messageKey);
+    }
+
+    SuccessCode(int statusCode, String messageKey) {
+        this(DEFAULT_RESPONSE_TYPE, statusCode, messageKey);
+    }
+
+    SuccessCode(String responseType, int statusCode, String messageKey) {
+        this.responseType = responseType;
+        this.statusCode = statusCode;
+        this.messageKey = messageKey;
+    }
 }
