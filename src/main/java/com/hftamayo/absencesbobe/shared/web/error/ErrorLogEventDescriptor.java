@@ -9,13 +9,13 @@ public interface ErrorLogEventDescriptor {
 
     default String getErrorCode() {
         return getType().name();
-    };    // machine code (or derive from getType())
+    }    // machine code (or derive from getType())
 
     default int getStatusCode() {
         return getType().getStatusCode();
     }
 
-    default String getTitle() {
+    default String getMessageKey() {
         return getType().getMessageKey();
     }
 }

@@ -17,7 +17,7 @@ public final class ErrorLogEventFactory {
         String correlationId = CorrelationUtils.getCorrelationId(request);
 
         return ErrorLogEventDto.builder()
-                .title(error.getTitle())
+                .title(error.getMessageKey())
                 .statusCode(error.getStatusCode())
                 .detail(error.getDetail())
                 .errorCode(error.getErrorCode())
