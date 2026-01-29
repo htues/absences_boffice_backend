@@ -1,6 +1,7 @@
 package com.hftamayo.absencesbobe.shared.web.factory;
 
 import com.hftamayo.absencesbobe.shared.application.result.Result;
+import com.hftamayo.absencesbobe.shared.web.constants.CodeDescriptor;
 import com.hftamayo.absencesbobe.shared.web.constants.ErrorCode;
 import com.hftamayo.absencesbobe.shared.web.constants.SuccessCode;
 import com.hftamayo.absencesbobe.shared.web.dto.ApiResponseDto;
@@ -19,7 +20,7 @@ public final class ApiResponseFactory {
      * that matches the frontend contract (type/responseType, code/statusCode, resultMessage, data).
      */
     public static <T> ResponseEntity<ApiResponseDto<?>> fromResult(
-            Result<T, ? extends ErrorLogEventDescriptor> result,
+            Result<T, ? extends CodeDescriptor> result,
             SuccessCode successCode,
             Long cache
     ) {
@@ -34,7 +35,9 @@ public final class ApiResponseFactory {
             return ResponseEntity.status(successCode.getStatusCode()).body(body);
         }
 
-        ErrorCode errorCode = responseError(result.error());
+        CodeDescriptor err = result.error();
+        ErrorCode errorCode = (err instanceof ErrorCode ec) ? ec : ErrorCode.UNKNOWN_ERROR;
+
         ApiResponseDto<Void> body = ApiResponseDto.response(errorCode, null, cache);
         return ResponseEntity.status(errorCode.getStatusCode()).body(body);
     }
