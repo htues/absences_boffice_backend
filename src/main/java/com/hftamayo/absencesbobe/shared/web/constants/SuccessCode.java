@@ -1,10 +1,9 @@
 package com.hftamayo.absencesbobe.shared.web.constants;
 
-import com.hftamayo.absencesbobe.shared.web.response.ApiResponseDescriptor;
 import lombok.Getter;
 
 @Getter
-public enum SuccessCode implements ApiResponseDescriptor {
+public enum SuccessCode implements CodeDescriptor {
     CREATED(201, "ENTITY_CREATED"),
     UPDATED("ENTITY_UPDATED"),
     DELETED("ENTITY_DELETED"),

@@ -1,10 +1,9 @@
 package com.hftamayo.absencesbobe.shared.web.constants;
 
-import com.hftamayo.absencesbobe.shared.web.response.ApiResponseDescriptor;
 import lombok.Getter;
 
 @Getter
-public enum ErrorCode implements ApiResponseDescriptor {
+public enum ErrorCode implements CodeDescriptor {
     BUSINESS_LOGIC_ERROR(400, "BUSINESS_LOGIC_VIOLATION"),
     UNAUTHORIZED(401, "UNAUTHORIZED_ACCESS"),
     FORBIDDEN(403, "FORBIDDEN_ACCESS"),
