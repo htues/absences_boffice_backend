@@ -2,7 +2,7 @@ package com.hftamayo.absencesbobe.shared.web.dto;
 
 import com.hftamayo.absencesbobe.shared.web.constants.ErrorCode;
 import com.hftamayo.absencesbobe.shared.web.constants.SuccessCode;
-import com.hftamayo.absencesbobe.shared.web.response.ApiResponseDescriptor;
+import com.hftamayo.absencesbobe.shared.web.constants.CodeDescriptor;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -25,7 +25,7 @@ public class ApiResponseDto<T> {
      * Pass either SuccessCode or ErrorCode (both implement ApiResponseDescriptor).
      */
     public static <T> ApiResponseDto<T> response(
-            ApiResponseDescriptor code,
+            CodeDescriptor code,
             T data,
             Long cache
     ) {
