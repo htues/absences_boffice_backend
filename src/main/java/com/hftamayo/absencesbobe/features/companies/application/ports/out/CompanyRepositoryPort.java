@@ -15,5 +15,5 @@ public interface CompanyRepositoryPort {
     /**
      * Useful for updates: "does some OTHER company already use this name?"
      */
-    boolean existsByNameAndIdNot(String name, Long idToExclude);
+    boolean existsByNameExcludingId(String name, Long idToExclude);
 }

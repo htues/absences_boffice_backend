@@ -21,6 +21,7 @@ public class CompanyJpaEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     @ToString.Include
+    @Setter
     private Long id;
 
     @Setter

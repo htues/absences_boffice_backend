@@ -1,6 +1,7 @@
 package com.hftamayo.absencesbobe.features.companies.application.usecases;
 
 import com.hftamayo.absencesbobe.features.companies.application.ports.in.CompanyCommandPort;
+import com.hftamayo.absencesbobe.features.companies.application.ports.out.CompanyRepositoryPort;
 import com.hftamayo.absencesbobe.features.companies.domain.Company;
 import com.hftamayo.absencesbobe.shared.application.result.Result;
 import com.hftamayo.absencesbobe.shared.web.constants.CodeDescriptor;
@@ -24,9 +25,9 @@ public class CompanyCommandService implements CompanyCommandPort {
                 return Result.error(ErrorCode.BUSINESS_LOGIC_ERROR);
             }
 
-            // Optional: prevent duplicate names at the application level (DB unique constraint is still the final guard)
+            // Optional: prevent duplicates at the application level (DB unique constraint is still the final guard)
             if (companyRepository.existsByName(company.getName())) {
-                return Result.error(ErrorCode.VALIDATION_ERROR);
+                return Result.error(ErrorCode.ENTITY_EXISTS);
             }
 
             Company saved = companyRepository.save(company);
@@ -47,7 +48,12 @@ public class CompanyCommandService implements CompanyCommandPort {
 
     @Transactional
     @Override
-    public Result<Company, ? extends CodeDescriptor> updateCompany(Long id, String name, String description, String address) {
+    public Result<Company, ? extends CodeDescriptor> updateCompany(
+            Long id,
+            String name,
+            String description,
+            String address
+    ) {
         try {
             if (id == null || id <= 0) {
                 return Result.error(ErrorCode.VALIDATION_ERROR);
@@ -59,11 +65,18 @@ public class CompanyCommandService implements CompanyCommandPort {
                             return Result.<Company, CodeDescriptor>error(ErrorCode.BUSINESS_LOGIC_ERROR);
                         }
 
+                        // Capture old name before mutation, so we can avoid a useless uniqueness query
+                        String oldName = existing.getName();
+
                         // Domain mutation (keeps validation inside the aggregate)
                         existing.updateDetails(name, description, address);
 
-                        // Optional: uniqueness check only if name changed (helps avoid false positives)
-                        if (companyRepository.existsByNameExcludingId(existing.getName(), existing.getId())) {
+                        // Only check uniqueness if the name actually changed
+                        boolean nameChanged = oldName == null
+                                ? existing.getName() != null
+                                : !oldName.equalsIgnoreCase(existing.getName());
+
+                        if (nameChanged && companyRepository.existsByNameExcludingId(existing.getName(), existing.getId())) {
                             return Result.<Company, CodeDescriptor>error(ErrorCode.ENTITY_EXISTS);
                         }
 
@@ -73,7 +86,8 @@ public class CompanyCommandService implements CompanyCommandPort {
                     .orElseGet(() -> Result.error(ErrorCode.NOT_FOUND));
 
         } catch (IllegalArgumentException ex) {
-            return Result.error(ErrorCode.BUSINESS_LOGIC_ERROR);
+            // Domain validation failed during updateDetails(...)
+            return Result.error(ErrorCode.VALIDATION_ERROR);
 
         } catch (DataIntegrityViolationException ex) {
             return Result.error(ErrorCode.ENTITY_EXISTS);
@@ -94,11 +108,11 @@ public class CompanyCommandService implements CompanyCommandPort {
             return companyRepository.findById(id)
                     .map(existing -> {
                         if (existing.isDeleted()) {
-                            // Idempotent delete: deleting an already-deleted resource can be treated as success
+                            // Idempotent delete
                             return Result.<Void, CodeDescriptor>ok(null);
                         }
 
-                        existing.markDeleted();      // domain rule: deleted=true, active=false
+                        existing.markDeleted(); // domain rule: deleted=true, active=false
                         companyRepository.save(existing);
 
                         return Result.<Void, CodeDescriptor>ok(null);
