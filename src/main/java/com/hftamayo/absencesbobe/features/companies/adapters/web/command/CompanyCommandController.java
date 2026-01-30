@@ -2,6 +2,7 @@ package com.hftamayo.absencesbobe.features.companies.adapters.web.command;
 
 import com.hftamayo.absencesbobe.features.companies.adapters.web.dto.CreateCompanyRequest;
 import com.hftamayo.absencesbobe.features.companies.adapters.web.dto.UpdateCompanyRequest;
+import com.hftamayo.absencesbobe.features.companies.application.ports.in.CompanyCommandPort;
 import com.hftamayo.absencesbobe.features.companies.domain.Company;
 import com.hftamayo.absencesbobe.shared.application.result.Result;
 import com.hftamayo.absencesbobe.shared.web.constants.CodeDescriptor;
@@ -23,15 +24,15 @@ import java.util.function.Supplier;
 @RestController
 @RequestMapping("/api/${version.api.current}/companies")
 public class CompanyCommandController {
-    private final CompanyCommandUseCase companyCommandUseCase;
+    private final CompanyCommandPort companyCommandPort;
 
     @PostMapping
-    public ResponseEntity<ApiResponseDto<?>> saveCompany(@RequestBody @Valid CreateCompanyRequest rawCompany,
+    public ResponseEntity<ApiResponseDto<?>> createCompany(@RequestBody @Valid CreateCompanyRequest rawCompany,
                                                          HttpServletRequest request) {
         Company company = toCompany(rawCompany);
 
         return handle(
-                () -> companyCommandUseCase.saveCompany(company),
+                () -> companyCommandPort.createCompany(company),
                 SuccessCode.CREATED,
                 request);
     }
@@ -43,7 +44,7 @@ public class CompanyCommandController {
             HttpServletRequest request
     ) {
         return handle(
-                () -> companyCommandUseCase.updateCompany(id, body.name(), body.description(), body.address()),
+                () -> companyCommandPort.updateCompany(id, body.name(), body.description(), body.address()),
                 SuccessCode.UPDATED,
                 request
         );
@@ -52,7 +53,7 @@ public class CompanyCommandController {
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<ApiResponseDto<?>> deleteCompany(@PathVariable @Positive Long id, HttpServletRequest request) {
         return handle(
-                () -> companyCommandUseCase.deleteCompany(id),
+                () -> companyCommandPort.deleteCompany(id),
                 SuccessCode.DELETED,
                 request
         );
