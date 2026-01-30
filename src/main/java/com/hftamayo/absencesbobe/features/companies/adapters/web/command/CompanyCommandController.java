@@ -2,6 +2,7 @@ package com.hftamayo.absencesbobe.features.companies.adapters.web.command;
 
 import com.hftamayo.absencesbobe.features.companies.adapters.web.dto.CreateCompanyRequest;
 import com.hftamayo.absencesbobe.features.companies.adapters.web.dto.UpdateCompanyRequest;
+import com.hftamayo.absencesbobe.features.companies.adapters.web.mapper.CompanyResponseMapper;
 import com.hftamayo.absencesbobe.features.companies.application.ports.in.CompanyCommandPort;
 import com.hftamayo.absencesbobe.features.companies.domain.Company;
 import com.hftamayo.absencesbobe.shared.application.result.Result;
@@ -25,16 +26,18 @@ import java.util.function.Supplier;
 @RequestMapping("/api/${version.api.current}/companies")
 public class CompanyCommandController {
     private final CompanyCommandPort companyCommandPort;
+    private final CompanyResponseMapper companyResponseMapper;
 
     @PostMapping
     public ResponseEntity<ApiResponseDto<?>> createCompany(@RequestBody @Valid CreateCompanyRequest rawCompany,
-                                                         HttpServletRequest request) {
+                                                           HttpServletRequest request) {
         Company company = toCompany(rawCompany);
 
         return handle(
-                () -> companyCommandPort.createCompany(company),
+                () -> mapResult(companyCommandPort.createCompany(company), companyResponseMapper::toDto),
                 SuccessCode.CREATED,
-                request);
+                request
+        );
     }
 
     @PutMapping("/{id}")
@@ -44,7 +47,10 @@ public class CompanyCommandController {
             HttpServletRequest request
     ) {
         return handle(
-                () -> companyCommandPort.updateCompany(id, body.name(), body.description(), body.address()),
+                () -> mapResult(
+                        companyCommandPort.updateCompany(id, body.name(), body.description(), body.address()),
+                        companyResponseMapper::toDto
+                ),
                 SuccessCode.UPDATED,
                 request
         );
@@ -63,6 +69,19 @@ public class CompanyCommandController {
         return Company.createNew(body.name(), body.description(), body.address());
     }
 
+    private static <T, R> Result<R, ? extends CodeDescriptor> mapResult(
+            Result<T, ? extends CodeDescriptor> result,
+            java.util.function.Function<T, R> mapper
+    ) {
+        if (result == null) {
+            return Result.error(com.hftamayo.absencesbobe.shared.web.constants.ErrorCode.UNKNOWN_ERROR);
+        }
+        if (!result.isSuccess()) {
+            return Result.error(result.error());
+        }
+        return Result.ok(mapper.apply(result.value()));
+    }
+
     private <T> ResponseEntity<ApiResponseDto<?>> handle(
             Supplier<Result<T, ? extends CodeDescriptor>> action,
             SuccessCode successCode,
@@ -71,8 +90,7 @@ public class CompanyCommandController {
         try {
             Result<T, ? extends CodeDescriptor> result = action.get();
             return ApiResponseFactory.fromResult(result, successCode, null);
-        } catch (Exception ignored) {
-            // Optionally log here (or build an ErrorLogEventDto via ApiResponseFactory.buildErrorEvent(...))
+        } catch (Exception ex) {
             return ApiResponseFactory.unknownError(null);
         }
     }
