@@ -16,6 +16,12 @@ public class CompanyRepositoryAdapter implements CompanyRepositoryPort {
 
     @Override
     public Optional<Company> findById(Long id) {
+        return jpaRepository.findByIdAndIsDeletedFalse(id)
+                .map(mapper::toDomain);
+    }
+
+    @Override
+    public Optional<Company> findByIdIncludingDeleted(Long id) {
         return jpaRepository.findById(id)
                 .map(mapper::toDomain);
     }
@@ -29,11 +35,11 @@ public class CompanyRepositoryAdapter implements CompanyRepositoryPort {
 
     @Override
     public boolean existsByName(String name) {
-        return jpaRepository.existsByNameIgnoreCase(name);
+        return jpaRepository.existsByNameIgnoreCaseAndIsDeletedFalse(name);
     }
 
     @Override
     public boolean existsByNameExcludingId(String name, Long idToExclude) {
-        return jpaRepository.existsByNameIgnoreCaseAndIdNot(name, idToExclude);
+        return jpaRepository.existsByNameIgnoreCaseAndIsDeletedFalseAndIdNot(name, idToExclude);
     }
 }

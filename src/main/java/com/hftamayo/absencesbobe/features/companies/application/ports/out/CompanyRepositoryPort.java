@@ -8,6 +8,12 @@ public interface CompanyRepositoryPort {
 
     Optional<Company> findById(Long id);
 
+    /**
+     * Exceptional read for delete/idempotency use cases.
+     * Includes soft-deleted rows.
+     */
+    Optional<Company> findByIdIncludingDeleted(Long id);
+
     Company save(Company company);
 
     boolean existsByName(String name);

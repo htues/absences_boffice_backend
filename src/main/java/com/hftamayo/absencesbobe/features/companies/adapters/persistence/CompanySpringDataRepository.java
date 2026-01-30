@@ -10,10 +10,12 @@ import java.util.Optional;
 public interface CompanySpringDataRepository
         extends JpaRepository<CompanyJpaEntity, Long>, JpaSpecificationExecutor<CompanyJpaEntity> {
 
-    Optional<CompanyJpaEntity> findByNameIgnoreCase(String name);
+    Optional<CompanyJpaEntity> findByIdAndIsDeletedFalse(Long id);
 
-    boolean existsByNameIgnoreCase(String name);
+    Optional<CompanyJpaEntity> findByNameIgnoreCaseAndIsDeletedFalse(String name);
 
-    // For updates: "does some OTHER row already use this name?"
-    boolean existsByNameIgnoreCaseAndIdNot(String name, Long idToExclude);
+    boolean existsByNameIgnoreCaseAndIsDeletedFalse(String name);
+
+    // For updates: "does some OTHER NON-DELETED row already use this name?"
+    boolean existsByNameIgnoreCaseAndIsDeletedFalseAndIdNot(String name, Long idToExclude);
 }

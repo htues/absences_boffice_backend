@@ -25,7 +25,7 @@ public class CompanyCommandService implements CompanyCommandPort {
                 return Result.error(ErrorCode.BUSINESS_LOGIC_ERROR);
             }
 
-            // Optional: prevent duplicates at the application level (DB unique constraint is still the final guard)
+            // Uniqueness ignores deleted rows (per repository policy)
             if (companyRepository.existsByName(company.getName())) {
                 return Result.error(ErrorCode.ENTITY_EXISTS);
             }
@@ -34,11 +34,9 @@ public class CompanyCommandService implements CompanyCommandPort {
             return Result.ok(saved);
 
         } catch (IllegalArgumentException ex) {
-            // Domain rejected blank/invalid input
             return Result.error(ErrorCode.VALIDATION_ERROR);
 
         } catch (DataIntegrityViolationException ex) {
-            // Race condition: unique constraint or other integrity issue during save
             return Result.error(ErrorCode.ENTITY_EXISTS);
 
         } catch (Exception ex) {
@@ -59,23 +57,18 @@ public class CompanyCommandService implements CompanyCommandPort {
                 return Result.error(ErrorCode.VALIDATION_ERROR);
             }
 
+            // Normal reads ignore deleted rows -> deleted behaves like NOT_FOUND here
             return companyRepository.findById(id)
                     .map(existing -> {
-                        if (existing.isDeleted()) {
-                            return Result.<Company, CodeDescriptor>error(ErrorCode.BUSINESS_LOGIC_ERROR);
-                        }
-
-                        // Capture old name before mutation, so we can avoid a useless uniqueness query
                         String oldName = existing.getName();
 
-                        // Domain mutation (keeps validation inside the aggregate)
                         existing.updateDetails(name, description, address);
 
-                        // Only check uniqueness if the name actually changed
                         boolean nameChanged = oldName == null
                                 ? existing.getName() != null
                                 : !oldName.equalsIgnoreCase(existing.getName());
 
+                        // Uniqueness ignores deleted rows (per repository policy)
                         if (nameChanged && companyRepository.existsByNameExcludingId(existing.getName(), existing.getId())) {
                             return Result.<Company, CodeDescriptor>error(ErrorCode.ENTITY_EXISTS);
                         }
@@ -86,7 +79,6 @@ public class CompanyCommandService implements CompanyCommandPort {
                     .orElseGet(() -> Result.error(ErrorCode.NOT_FOUND));
 
         } catch (IllegalArgumentException ex) {
-            // Domain validation failed during updateDetails(...)
             return Result.error(ErrorCode.VALIDATION_ERROR);
 
         } catch (DataIntegrityViolationException ex) {
@@ -105,16 +97,15 @@ public class CompanyCommandService implements CompanyCommandPort {
                 return Result.error(ErrorCode.VALIDATION_ERROR);
             }
 
-            return companyRepository.findById(id)
+            // Delete is allowed to "see" deleted rows to stay idempotent
+            return companyRepository.findByIdIncludingDeleted(id)
                     .map(existing -> {
                         if (existing.isDeleted()) {
-                            // Idempotent delete
                             return Result.<Void, CodeDescriptor>ok(null);
                         }
 
-                        existing.markDeleted(); // domain rule: deleted=true, active=false
+                        existing.markDeleted();
                         companyRepository.save(existing);
-
                         return Result.<Void, CodeDescriptor>ok(null);
                     })
                     .orElseGet(() -> Result.error(ErrorCode.NOT_FOUND));
