@@ -3,6 +3,7 @@ package com.hftamayo.absencesbobe.features.companies.adapters.persistence;
 import com.hftamayo.absencesbobe.features.companies.domain.Company;
 import org.springframework.stereotype.Component;
 
+
 @Component
 public class CompanyPersistenceMapper {
 
@@ -17,7 +18,11 @@ public class CompanyPersistenceMapper {
                 entity.getDescription(),
                 entity.getAddress(),
                 entity.isActive(),
-                entity.isDeleted()
+                entity.isDeleted(),
+                entity.getCreatedBy(),
+                entity.getLastModifiedBy(),
+                entity.getCreatedDate(),
+                entity.getLastModifiedDate()
         );
     }
 

@@ -20,9 +20,10 @@ public class CompanyResponseMapper {
         dto.setActive(company.isActive());
         dto.setDeleted(company.isDeleted());
 
-        // Domain doesn't contain audit fields -> null for now
-        dto.setCreatedBy(null);
-        dto.setCreatedDate(null);
+        dto.setCreatedBy(company.getCreatedBy());
+        dto.setUpdatedBy(company.getUpdatedBy());
+        dto.setCreatedDate(company.getCreatedDate());
+        dto.setUpdatedDate(company.getUpdatedDate());
 
         return dto;
     }
