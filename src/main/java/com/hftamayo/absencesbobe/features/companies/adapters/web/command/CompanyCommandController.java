@@ -56,6 +56,21 @@ public class CompanyCommandController {
         );
     }
 
+    @PutMapping("/{id}/deactivate")
+    public ResponseEntity<ApiResponseDto<?>> deactivateCompany(
+            @PathVariable Long id,
+            HttpServletRequest request
+    ) {
+        return handle(
+                () -> mapResult(
+                        companyCommandPort.deactivateCompany(id),
+                        companyResponseMapper::toDto
+                ),
+                SuccessCode.UPDATED,
+                request
+        );
+    }
+
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<ApiResponseDto<?>> deleteCompany(@PathVariable @Positive Long id, HttpServletRequest request) {
         return handle(

@@ -11,4 +11,6 @@ public interface CompanyCommandPort {
 
     Result<Void, ? extends CodeDescriptor> deleteCompany(Long id);
 
+    Result<Company, ? extends CodeDescriptor> deactivateCompany(Long id);
+
 }

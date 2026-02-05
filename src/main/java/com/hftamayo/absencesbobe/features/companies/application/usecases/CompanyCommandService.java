@@ -114,4 +114,29 @@ public class CompanyCommandService implements CompanyCommandPort {
             return Result.error(ErrorCode.UNKNOWN_ERROR);
         }
     }
+
+    @Transactional
+    @Override
+    public Result<Company, ? extends CodeDescriptor> deactivateCompany(Long id) {
+        try {
+            if (id == null || id <= 0) {
+                return Result.error(ErrorCode.VALIDATION_ERROR);
+            }
+
+            return companyRepository.findById(id)
+                    .map(existing -> {
+                        if (!existing.isActive()) {
+                            return Result.<Company, CodeDescriptor>ok(existing); // idempotent
+                        }
+
+                        existing.deactivate();
+                        Company saved = companyRepository.save(existing);
+                        return Result.<Company, CodeDescriptor>ok(saved);
+                    })
+                    .orElseGet(() -> Result.error(ErrorCode.NOT_FOUND));
+
+        } catch (Exception ex) {
+            return Result.error(ErrorCode.UNKNOWN_ERROR);
+        }
+    }
 }
