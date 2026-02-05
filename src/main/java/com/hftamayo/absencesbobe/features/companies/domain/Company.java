@@ -60,7 +60,7 @@ public class Company {
 
     public void markDeleted() {
         this.deleted = true;
-        this.active = false;
+        deactivate();
     }
     public Long getCreatedBy() {
         return auditInfo.createdBy();
