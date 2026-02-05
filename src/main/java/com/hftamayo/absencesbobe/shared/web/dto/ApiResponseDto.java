@@ -1,8 +1,8 @@
 package com.hftamayo.absencesbobe.shared.web.dto;
 
-import com.hftamayo.absencesbobe.shared.web.constants.ErrorCode;
-import com.hftamayo.absencesbobe.shared.web.constants.SuccessCode;
-import com.hftamayo.absencesbobe.shared.web.constants.CodeDescriptor;
+import com.hftamayo.absencesbobe.shared.web.constants.ErrorApiResponse;
+import com.hftamayo.absencesbobe.shared.web.constants.SuccessApiResponse;
+import com.hftamayo.absencesbobe.shared.web.constants.ApiResponseDescriptor;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -25,7 +25,7 @@ public class ApiResponseDto<T> {
      * Pass either SuccessCode or ErrorCode (both implement ApiResponseDescriptor).
      */
     public static <T> ApiResponseDto<T> response(
-            CodeDescriptor code,
+            ApiResponseDescriptor code,
             T data,
             Long cache
     ) {
@@ -39,11 +39,11 @@ public class ApiResponseDto<T> {
                 .build();
     }
 
-    public static <T> ApiResponseDto<T> ok(SuccessCode code, T data, Long cache) {
+    public static <T> ApiResponseDto<T> ok(SuccessApiResponse code, T data, Long cache) {
         return response(code, data, cache);
     }
 
-    public static ApiResponseDto<Void> fail(ErrorCode code, Long cache) {
+    public static ApiResponseDto<Void> fail(ErrorApiResponse code, Long cache) {
         return response(code, null, cache);
     }
 }

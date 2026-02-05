@@ -1,6 +1,6 @@
 package com.hftamayo.absencesbobe.shared.web.error;
 
-import com.hftamayo.absencesbobe.shared.web.constants.ErrorCode;
+import com.hftamayo.absencesbobe.shared.web.constants.ErrorApiResponse;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -15,8 +15,8 @@ public class DuplicateResourceError implements ErrorLogEventDescriptor {
     private final String value;
 
     @Override
-    public ErrorCode getType() {
-        return ErrorCode.ENTITY_EXISTS;
+    public ErrorApiResponse getType() {
+        return ErrorApiResponse.ENTITY_EXISTS;
     }
 
     public static DuplicateResourceError withId(String resourceType, Long resourceId) {

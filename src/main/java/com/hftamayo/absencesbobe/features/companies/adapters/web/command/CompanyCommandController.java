@@ -6,8 +6,9 @@ import com.hftamayo.absencesbobe.features.companies.adapters.web.mapper.CompanyR
 import com.hftamayo.absencesbobe.features.companies.application.ports.in.CompanyCommandPort;
 import com.hftamayo.absencesbobe.features.companies.domain.Company;
 import com.hftamayo.absencesbobe.shared.application.result.Result;
-import com.hftamayo.absencesbobe.shared.web.constants.CodeDescriptor;
-import com.hftamayo.absencesbobe.shared.web.constants.SuccessCode;
+import com.hftamayo.absencesbobe.shared.web.constants.ApiResponseDescriptor;
+import com.hftamayo.absencesbobe.shared.web.constants.ErrorApiResponse;
+import com.hftamayo.absencesbobe.shared.web.constants.SuccessApiResponse;
 import com.hftamayo.absencesbobe.shared.web.dto.ApiResponseDto;
 import com.hftamayo.absencesbobe.shared.web.factory.ApiResponseFactory;
 
@@ -35,7 +36,7 @@ public class CompanyCommandController {
 
         return handle(
                 () -> mapResult(companyCommandPort.createCompany(company), companyResponseMapper::toDto),
-                SuccessCode.CREATED,
+                SuccessApiResponse.CREATED,
                 request
         );
     }
@@ -51,7 +52,7 @@ public class CompanyCommandController {
                         companyCommandPort.updateCompany(id, body.name(), body.description(), body.address()),
                         companyResponseMapper::toDto
                 ),
-                SuccessCode.UPDATED,
+                SuccessApiResponse.UPDATED,
                 request
         );
     }
@@ -66,7 +67,7 @@ public class CompanyCommandController {
                         companyCommandPort.deactivateCompany(id),
                         companyResponseMapper::toDto
                 ),
-                SuccessCode.UPDATED,
+                SuccessApiResponse.UPDATED,
                 request
         );
     }
@@ -75,7 +76,7 @@ public class CompanyCommandController {
     public ResponseEntity<ApiResponseDto<?>> deleteCompany(@PathVariable @Positive Long id, HttpServletRequest request) {
         return handle(
                 () -> companyCommandPort.deleteCompany(id),
-                SuccessCode.DELETED,
+                SuccessApiResponse.DELETED,
                 request
         );
     }
@@ -84,12 +85,12 @@ public class CompanyCommandController {
         return Company.createNew(body.name(), body.description(), body.address());
     }
 
-    private static <T, R> Result<R, ? extends CodeDescriptor> mapResult(
-            Result<T, ? extends CodeDescriptor> result,
+    private static <T, R> Result<R, ? extends ApiResponseDescriptor> mapResult(
+            Result<T, ? extends ApiResponseDescriptor> result,
             java.util.function.Function<T, R> mapper
     ) {
         if (result == null) {
-            return Result.error(com.hftamayo.absencesbobe.shared.web.constants.ErrorCode.UNKNOWN_ERROR);
+            return Result.error(ErrorApiResponse.UNKNOWN_ERROR);
         }
         if (!result.isSuccess()) {
             return Result.error(result.error());
@@ -98,12 +99,12 @@ public class CompanyCommandController {
     }
 
     private <T> ResponseEntity<ApiResponseDto<?>> handle(
-            Supplier<Result<T, ? extends CodeDescriptor>> action,
-            SuccessCode successCode,
+            Supplier<Result<T, ? extends ApiResponseDescriptor>> action,
+            SuccessApiResponse successCode,
             HttpServletRequest request
     ) {
         try {
-            Result<T, ? extends CodeDescriptor> result = action.get();
+            Result<T, ? extends ApiResponseDescriptor> result = action.get();
             return ApiResponseFactory.fromResult(result, successCode, null);
         } catch (Exception ex) {
             return ApiResponseFactory.unknownError(null);

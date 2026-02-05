@@ -1,6 +1,6 @@
 package com.hftamayo.absencesbobe.shared.web.error;
 
-import com.hftamayo.absencesbobe.shared.web.constants.ErrorCode;
+import com.hftamayo.absencesbobe.shared.web.constants.ErrorApiResponse;
 
 public class UnknownError extends Exception implements ErrorLogEventDescriptor {
 
@@ -13,8 +13,8 @@ public class UnknownError extends Exception implements ErrorLogEventDescriptor {
     }
 
     @Override
-    public ErrorCode getType() {
-        return ErrorCode.UNKNOWN_ERROR;
+    public ErrorApiResponse getType() {
+        return ErrorApiResponse.UNKNOWN_ERROR;
     }
 
     @Override

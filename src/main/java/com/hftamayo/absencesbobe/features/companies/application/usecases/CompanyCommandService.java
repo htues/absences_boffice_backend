@@ -4,8 +4,8 @@ import com.hftamayo.absencesbobe.features.companies.application.ports.in.Company
 import com.hftamayo.absencesbobe.features.companies.application.ports.out.CompanyRepositoryPort;
 import com.hftamayo.absencesbobe.features.companies.domain.Company;
 import com.hftamayo.absencesbobe.shared.application.result.Result;
-import com.hftamayo.absencesbobe.shared.web.constants.CodeDescriptor;
-import com.hftamayo.absencesbobe.shared.web.constants.ErrorCode;
+import com.hftamayo.absencesbobe.shared.web.constants.ApiResponseDescriptor;
+import com.hftamayo.absencesbobe.shared.web.constants.ErrorApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -19,34 +19,34 @@ public class CompanyCommandService implements CompanyCommandPort {
 
     @Transactional
     @Override
-    public Result<Company, ? extends CodeDescriptor> createCompany(Company company) {
+    public Result<Company, ? extends ApiResponseDescriptor> createCompany(Company company) {
         try {
             if (company == null) {
-                return Result.error(ErrorCode.BUSINESS_LOGIC_ERROR);
+                return Result.error(ErrorApiResponse.BUSINESS_LOGIC_ERROR);
             }
 
             // Uniqueness ignores deleted rows (per repository policy)
             if (companyRepository.existsByName(company.getName())) {
-                return Result.error(ErrorCode.ENTITY_EXISTS);
+                return Result.error(ErrorApiResponse.ENTITY_EXISTS);
             }
 
             Company saved = companyRepository.save(company);
             return Result.ok(saved);
 
         } catch (IllegalArgumentException ex) {
-            return Result.error(ErrorCode.VALIDATION_ERROR);
+            return Result.error(ErrorApiResponse.VALIDATION_ERROR);
 
         } catch (DataIntegrityViolationException ex) {
-            return Result.error(ErrorCode.ENTITY_EXISTS);
+            return Result.error(ErrorApiResponse.ENTITY_EXISTS);
 
         } catch (Exception ex) {
-            return Result.error(ErrorCode.UNKNOWN_ERROR);
+            return Result.error(ErrorApiResponse.UNKNOWN_ERROR);
         }
     }
 
     @Transactional
     @Override
-    public Result<Company, ? extends CodeDescriptor> updateCompany(
+    public Result<Company, ? extends ApiResponseDescriptor> updateCompany(
             Long id,
             String name,
             String description,
@@ -54,7 +54,7 @@ public class CompanyCommandService implements CompanyCommandPort {
     ) {
         try {
             if (id == null || id <= 0) {
-                return Result.error(ErrorCode.VALIDATION_ERROR);
+                return Result.error(ErrorApiResponse.VALIDATION_ERROR);
             }
 
             // Normal reads ignore deleted rows -> deleted behaves like NOT_FOUND here
@@ -70,73 +70,73 @@ public class CompanyCommandService implements CompanyCommandPort {
 
                         // Uniqueness ignores deleted rows (per repository policy)
                         if (nameChanged && companyRepository.existsByNameExcludingId(existing.getName(), existing.getId())) {
-                            return Result.<Company, CodeDescriptor>error(ErrorCode.ENTITY_EXISTS);
+                            return Result.<Company, ApiResponseDescriptor>error(ErrorApiResponse.ENTITY_EXISTS);
                         }
 
                         Company saved = companyRepository.save(existing);
-                        return Result.<Company, CodeDescriptor>ok(saved);
+                        return Result.<Company, ApiResponseDescriptor>ok(saved);
                     })
-                    .orElseGet(() -> Result.error(ErrorCode.NOT_FOUND));
+                    .orElseGet(() -> Result.error(ErrorApiResponse.NOT_FOUND));
 
         } catch (IllegalArgumentException ex) {
-            return Result.error(ErrorCode.VALIDATION_ERROR);
+            return Result.error(ErrorApiResponse.VALIDATION_ERROR);
 
         } catch (DataIntegrityViolationException ex) {
-            return Result.error(ErrorCode.ENTITY_EXISTS);
+            return Result.error(ErrorApiResponse.ENTITY_EXISTS);
 
         } catch (Exception ex) {
-            return Result.error(ErrorCode.UNKNOWN_ERROR);
+            return Result.error(ErrorApiResponse.UNKNOWN_ERROR);
         }
     }
 
     @Transactional
     @Override
-    public Result<Void, ? extends CodeDescriptor> deleteCompany(Long id) {
+    public Result<Void, ? extends ApiResponseDescriptor> deleteCompany(Long id) {
         try {
             if (id == null || id <= 0) {
-                return Result.error(ErrorCode.VALIDATION_ERROR);
+                return Result.error(ErrorApiResponse.VALIDATION_ERROR);
             }
 
             // Delete is allowed to "see" deleted rows to stay idempotent
             return companyRepository.findByIdIncludingDeleted(id)
                     .map(existing -> {
                         if (existing.isDeleted()) {
-                            return Result.<Void, CodeDescriptor>ok(null);
+                            return Result.<Void, ApiResponseDescriptor>ok(null);
                         }
 
                         existing.markDeleted();
                         companyRepository.save(existing);
-                        return Result.<Void, CodeDescriptor>ok(null);
+                        return Result.<Void, ApiResponseDescriptor>ok(null);
                     })
-                    .orElseGet(() -> Result.error(ErrorCode.NOT_FOUND));
+                    .orElseGet(() -> Result.error(ErrorApiResponse.NOT_FOUND));
 
         } catch (Exception ex) {
-            return Result.error(ErrorCode.UNKNOWN_ERROR);
+            return Result.error(ErrorApiResponse.UNKNOWN_ERROR);
         }
     }
 
     @Transactional
     @Override
-    public Result<Company, ? extends CodeDescriptor> deactivateCompany(Long id) {
+    public Result<Company, ? extends ApiResponseDescriptor> deactivateCompany(Long id) {
         try {
             if (id == null || id <= 0) {
-                return Result.error(ErrorCode.VALIDATION_ERROR);
+                return Result.error(ErrorApiResponse.VALIDATION_ERROR);
             }
 
             return companyRepository.findById(id)
                     .map(existing -> {
                         if (!existing.isActive()) {
-                            return Result.<Company, CodeDescriptor>ok(existing); // idempotent
+                            return Result.<Company, ApiResponseDescriptor>ok(existing); // idempotent
                         }
 
                         existing.deactivate();
                         Company saved = companyRepository.save(existing);
-                        return Result.<Company, CodeDescriptor>ok(saved);
+                        return Result.<Company, ApiResponseDescriptor>ok(saved);
                     })
-                    .orElseGet(() -> Result.error(ErrorCode.NOT_FOUND));
+                    .orElseGet(() -> Result.error(ErrorApiResponse.NOT_FOUND));
 
         } catch (Exception ex) {
-            return Result.error(ErrorCode.UNKNOWN_ERROR);
+            return Result.error(ErrorApiResponse.UNKNOWN_ERROR);
         }
     }
 }

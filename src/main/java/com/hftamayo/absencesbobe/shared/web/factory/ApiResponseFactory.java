@@ -1,9 +1,9 @@
 package com.hftamayo.absencesbobe.shared.web.factory;
 
 import com.hftamayo.absencesbobe.shared.application.result.Result;
-import com.hftamayo.absencesbobe.shared.web.constants.CodeDescriptor;
-import com.hftamayo.absencesbobe.shared.web.constants.ErrorCode;
-import com.hftamayo.absencesbobe.shared.web.constants.SuccessCode;
+import com.hftamayo.absencesbobe.shared.web.constants.ApiResponseDescriptor;
+import com.hftamayo.absencesbobe.shared.web.constants.ErrorApiResponse;
+import com.hftamayo.absencesbobe.shared.web.constants.SuccessApiResponse;
 import com.hftamayo.absencesbobe.shared.web.dto.ApiResponseDto;
 import com.hftamayo.absencesbobe.shared.web.dto.ErrorLogEventDto;
 import com.hftamayo.absencesbobe.shared.web.error.ErrorLogEventDescriptor;
@@ -20,8 +20,8 @@ public final class ApiResponseFactory {
      * that matches the frontend contract (type/responseType, code/statusCode, resultMessage, data).
      */
     public static <T> ResponseEntity<ApiResponseDto<?>> fromResult(
-            Result<T, ? extends CodeDescriptor> result,
-            SuccessCode successCode,
+            Result<T, ? extends ApiResponseDescriptor> result,
+            SuccessApiResponse successCode,
             Long cache
     ) {
         Objects.requireNonNull(successCode, "successCode must not be null");
@@ -35,8 +35,8 @@ public final class ApiResponseFactory {
             return ResponseEntity.status(successCode.getStatusCode()).body(body);
         }
 
-        CodeDescriptor err = result.error();
-        ErrorCode errorCode = (err instanceof ErrorCode ec) ? ec : ErrorCode.UNKNOWN_ERROR;
+        ApiResponseDescriptor err = result.error();
+        ErrorApiResponse errorCode = (err instanceof ErrorApiResponse ec) ? ec : ErrorApiResponse.UNKNOWN_ERROR;
 
         ApiResponseDto<Void> body = ApiResponseDto.response(errorCode, null, cache);
         return ResponseEntity.status(errorCode.getStatusCode()).body(body);
@@ -57,9 +57,9 @@ public final class ApiResponseFactory {
     /**
      * Maps an ErrorLogEventDescriptor to the ErrorCode used in the response.
      */
-    public static ErrorCode responseError(ErrorLogEventDescriptor error) {
+    public static ErrorApiResponse responseError(ErrorLogEventDescriptor error) {
         return (error == null || error.getType() == null)
-                ? ErrorCode.UNKNOWN_ERROR
+                ? ErrorApiResponse.UNKNOWN_ERROR
                 : error.getType();
     }
 
@@ -67,7 +67,7 @@ public final class ApiResponseFactory {
      * Convenience: unknown error response (500).
      */
     public static ResponseEntity<ApiResponseDto<?>> unknownError(Long cache) {
-        ErrorCode code = ErrorCode.UNKNOWN_ERROR;
+        ErrorApiResponse code = ErrorApiResponse.UNKNOWN_ERROR;
         ApiResponseDto<Void> body = ApiResponseDto.response(code, null, cache);
         return ResponseEntity.status(code.getStatusCode()).body(body);
     }

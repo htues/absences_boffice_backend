@@ -1,6 +1,6 @@
 package com.hftamayo.absencesbobe.shared.web.error;
 
-import com.hftamayo.absencesbobe.shared.web.constants.ErrorCode;
+import com.hftamayo.absencesbobe.shared.web.constants.ErrorApiResponse;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,8 +12,8 @@ public record ValidationError(
 ) implements ErrorLogEventDescriptor {
 
     @Override
-    public ErrorCode getType() {
-        return ErrorCode.VALIDATION_ERROR;
+    public ErrorApiResponse getType() {
+        return ErrorApiResponse.VALIDATION_ERROR;
     }
 
     @Override

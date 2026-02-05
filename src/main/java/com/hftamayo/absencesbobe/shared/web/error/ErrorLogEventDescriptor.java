@@ -1,9 +1,9 @@
 package com.hftamayo.absencesbobe.shared.web.error;
 
-import com.hftamayo.absencesbobe.shared.web.constants.ErrorCode;
+import com.hftamayo.absencesbobe.shared.web.constants.ErrorApiResponse;
 
 public interface ErrorLogEventDescriptor {
-    ErrorCode getType();
+    ErrorApiResponse getType();
 
     String getDetail();
 

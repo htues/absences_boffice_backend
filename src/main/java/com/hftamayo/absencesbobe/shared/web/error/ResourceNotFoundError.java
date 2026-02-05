@@ -1,6 +1,6 @@
 package com.hftamayo.absencesbobe.shared.web.error;
 
-import com.hftamayo.absencesbobe.shared.web.constants.ErrorCode;
+import com.hftamayo.absencesbobe.shared.web.constants.ErrorApiResponse;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -13,8 +13,8 @@ public class ResourceNotFoundError implements ErrorLogEventDescriptor {
     private final String message;
 
     @Override
-    public ErrorCode getType() {
-        return ErrorCode.NOT_FOUND;
+    public ErrorApiResponse getType() {
+        return ErrorApiResponse.NOT_FOUND;
     }
 
     @Override

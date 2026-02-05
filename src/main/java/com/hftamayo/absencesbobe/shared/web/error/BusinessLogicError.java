@@ -1,6 +1,6 @@
 package com.hftamayo.absencesbobe.shared.web.error;
 
-import com.hftamayo.absencesbobe.shared.web.constants.ErrorCode;
+import com.hftamayo.absencesbobe.shared.web.constants.ErrorApiResponse;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -26,8 +26,8 @@ public class BusinessLogicError implements ErrorLogEventDescriptor {
     private final String message;
 
     @Override
-    public ErrorCode getType() {
-        return ErrorCode.BUSINESS_LOGIC_ERROR;
+    public ErrorApiResponse getType() {
+        return ErrorApiResponse.BUSINESS_LOGIC_ERROR;
     }
 
     @Override
