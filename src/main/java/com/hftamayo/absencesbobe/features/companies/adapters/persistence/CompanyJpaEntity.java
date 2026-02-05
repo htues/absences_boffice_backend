@@ -6,7 +6,9 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Getter
@@ -15,6 +17,7 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
 @Table(name = "companies")
+@EntityListeners(AuditingEntityListener.class)
 public class CompanyJpaEntity {
 
     @Id
@@ -47,19 +50,19 @@ public class CompanyJpaEntity {
 
     @CreatedBy
     @Column(name = "created_by", updatable = false)
-    private String createdBy;
+    private Long createdBy;
 
     @LastModifiedBy
     @Column(name = "last_modified_by")
-    private String lastModifiedBy;
+    private Long lastModifiedBy;
 
     @CreationTimestamp
     @Column(name = "created_date", updatable = false)
-    private LocalDateTime createdDate;
+    private Instant createdDate;
 
     @UpdateTimestamp
     @Column(name = "last_modified_date")
-    private LocalDateTime lastModifiedDate;
+    private Instant lastModifiedDate;
 
     // Optional: domain-friendly helpers (keeps calling code from touching fields directly)
     public void markDeleted() {
