@@ -1,6 +1,7 @@
 package com.hftamayo.absencesbobe.features.companies.adapters.persistence;
 
 import com.hftamayo.absencesbobe.features.companies.domain.Company;
+import com.hftamayo.absencesbobe.shared.domain.AuditInfo;
 import org.springframework.stereotype.Component;
 
 
@@ -12,6 +13,13 @@ public class CompanyPersistenceMapper {
             return null;
         }
 
+        AuditInfo auditInfo = new AuditInfo(
+                entity.getCreatedBy(),
+                entity.getLastModifiedBy(),
+                entity.getCreatedDate(),
+                entity.getLastModifiedDate()
+        );
+
         return Company.rehydrate(
                 entity.getId(),
                 entity.getName(),
@@ -19,11 +27,8 @@ public class CompanyPersistenceMapper {
                 entity.getAddress(),
                 entity.isActive(),
                 entity.isDeleted(),
-                entity.getCreatedBy(),
-                entity.getLastModifiedBy(),
-                entity.getCreatedDate(),
-                entity.getLastModifiedDate()
-        );
+                auditInfo
+                );
     }
 
     public CompanyJpaEntity toEntity(Company domain) {
