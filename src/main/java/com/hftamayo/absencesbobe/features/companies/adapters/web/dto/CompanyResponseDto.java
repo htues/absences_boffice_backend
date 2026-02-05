@@ -20,7 +20,7 @@ public class CompanyResponseDto {
     private boolean isActive;
     private boolean isDeleted;
     private Long createdBy;
-    private long updatedBy;
+    private Long updatedBy;
     private Instant createdDate;
     private Instant updatedDate;
 }
