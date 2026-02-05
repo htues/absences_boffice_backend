@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
+
 @Setter
 @Getter
 @NoArgsConstructor
@@ -17,6 +19,8 @@ public class CompanyResponseDto {
     private String address;
     private boolean isActive;
     private boolean isDeleted;
-    private String createdBy;
-    private String createdDate;
+    private Long createdBy;
+    private long updatedBy;
+    private Instant createdDate;
+    private Instant updatedDate;
 }
