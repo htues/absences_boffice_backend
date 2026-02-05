@@ -48,7 +48,7 @@ public class CompanyJpaEntity {
     private boolean isDeleted = false;
 
     @CreatedBy
-    @Column(name = "created_by", updatable = false)
+    @Column(name = "created_by", updatable = false, nullable = false)
     private Long createdBy;
 
     @LastModifiedBy
@@ -56,7 +56,7 @@ public class CompanyJpaEntity {
     private Long lastModifiedBy;
 
     @CreationTimestamp
-    @Column(name = "created_date", updatable = false)
+    @Column(name = "created_date", updatable = false, nullable = false)
     private Instant createdDate;
 
     @UpdateTimestamp
