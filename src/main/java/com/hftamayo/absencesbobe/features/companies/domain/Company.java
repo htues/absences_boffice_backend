@@ -1,5 +1,6 @@
 package com.hftamayo.absencesbobe.features.companies.domain;
 
+import com.hftamayo.absencesbobe.shared.domain.AuditInfo;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -17,27 +18,22 @@ public class Company {
     private boolean active;
     private boolean deleted;
 
-    private final Long createdBy;
-    private final Long updatedBy;
-    private final Instant createdDate;
-    private final Instant updatedDate;
+    private final AuditInfo auditInfo;
 
-    private Company(Long id, String name, String description, String address, boolean active, boolean deleted, Long createdBy, Long updatedBy, Instant createdDate, Instant updatedDate) {
+    private Company(Long id, String name, String description, String address,
+                    boolean active, boolean deleted, AuditInfo auditInfo) {
         this.id = id;
         this.name = requireText(name, "name");
         this.description = requireText(description, "description");
         this.address = requireText(address, "address");
         this.active = active;
         this.deleted = deleted;
-        this.createdBy = createdBy;
-        this.updatedBy = updatedBy;
-        this.createdDate = createdDate;
-        this.updatedDate = updatedDate;
+        this.auditInfo = auditInfo == null ? AuditInfo.empty() : auditInfo;
 
     }
 
     public static Company createNew(String name, String description, String address) {
-        return new Company(null, name, description, address, true, false, null, null, null, null);
+        return new Company(null, name, description, address, true, false, AuditInfo.empty());
     }
 
     public static Company rehydrate(
@@ -47,12 +43,9 @@ public class Company {
             String address,
             boolean active,
             boolean deleted,
-            Long createdBy,
-            Long updatedBy,
-            Instant createdDate,
-            Instant updatedDate
+            AuditInfo auditInfo
     ) {
-        return new Company(id, name, description, address, active, deleted, createdBy, updatedBy, createdDate, updatedDate);
+        return new Company(id, name, description, address, active, deleted, auditInfo);
     }
 
     public void updateDetails(String name, String description, String address) {
@@ -68,6 +61,21 @@ public class Company {
     public void markDeleted() {
         this.deleted = true;
         this.active = false;
+    }
+    public Long getCreatedBy() {
+        return auditInfo.createdBy();
+    }
+
+    public Long getUpdatedBy() {
+        return auditInfo.updatedBy();
+    }
+
+    public Instant getCreatedDate() {
+        return auditInfo.createdDate();
+    }
+
+    public Instant getUpdatedDate() {
+        return auditInfo.updatedDate();
     }
 
     private static String requireText(String value, String field) {
