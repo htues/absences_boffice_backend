@@ -1,0 +1,73 @@
+FROM postgres:14-alpine
+
+RUN apk add --no-cache bash
+
+WORKDIR /docker-entrypoint-initdb.d
+
+COPY db.sql .
+
+EXPOSE 5432
+
+# PostgreSQL data directory - use bind mount to host OS for data persistence
+# Data will be stored on host at the path specified in docker run command
+VOLUME ["/var/lib/postgresql/data"]
+
+CMD ["docker-entrypoint.sh", "postgres"]
+#to run this file:
+#sudo chmod 755 /opt/htamayo/absencesbo/data
+#si necesito regenerar el container debo borrar toda la carpeta data
+#sudo rm -rf data/
+#docker build --no-cache -f Dockerfile.pg.onpremise -t your-image-name .
+#docker run --name pgdevelopment --network developer_network -p 5432:5432 -d --env-file .env -v /opt/htamayo/boabsences/data:/var/lib/postgresql/data your-image-name
+
+#docker network create developer_network
+#docker build -f dockerfiles/Dockerfile.pg -t hftamayo/pgdbserver:0.0.1 .
+
+#the below commands need to be run on the root of the project
+#pg container NEEDS to read env file of the project
+#docker run --name pgdbserver --network developer_network -p 5432:5432 -d --env-file .env -v /opt/hftamayo/boabsences/data:/var/lib/postgresql/data hftamayo/pgdbserver:0.0.1
+# Example: -v /mnt/nas/postgres-data:/var/lib/postgresql/data
+# Example: -v /storage/san/boabsenses-db:/var/lib/postgresql/data
+# Example: -v $(pwd)/dockerfiles/postgres-data:/var/lib/postgresql/data
+#docker start pgdbserver
+
+#To access the container:
+#docker exec -it pgdevelopment bash
+#psql -h $POSTGRES_HOST -U $POSTGRES_USER -d $POSTGRES_DB 
+#en caso que la BD no se haya creado y necesito entrar al catalogo default:
+#psql -h $POSTGRES_HOST -U $POSTGRES_USER -d postgres
+
+# backup data directory (from host OS - data is directly accessible):
+# tar czf backups/pgdbserver_data_$(date +%Y%m%d_%H%M%S).tar.gz -C /opt/hftamayo/boabsences/data .
+# Or using docker (if you prefer):
+# docker run --rm -v /opt/hftamayo/boabsences/data:/data -v $(pwd)/backups:/backup alpine tar czf /backup/pgdbserver_data_$(date +%Y%m%d_%H%M%S).tar.gz -C /data .
+
+# restore data directory (from host OS):
+# Stop container first: docker stop pgdbserver
+# cd /opt/hftamayo/boabsences/data && rm -rf * && tar xzf /path/to/backup/pgdbserver_data_backup.tar.gz
+# Start container: docker start pgdbserver
+# Or using docker:
+# docker run --rm -v /opt/hftamayo/boabsences/data:/data -v $(pwd)/backups:/backup alpine sh -c "cd /data && rm -rf * && tar xzf /backup/pgdbserver_data_backup.tar.gz"    
+
+#Bind mount management (data is on host OS):
+# List host directory:
+# ls -la /opt/hftamayo/boabsences/data
+#
+# Check disk usage:
+# du -sh /opt/hftamayo/boabsences/data
+#
+# Copy data to another location (e.g., NAS/SAN):
+# rsync -av /opt/hftamayo/boabsences/data/ /mnt/nas/backup/postgres-data/
+#
+# Mount NAS/SAN location:
+# First, mount NAS/SAN to host: mount -t nfs nas-server:/path /mnt/nas
+# Then use in docker run: -v /mnt/nas/postgres-data:/var/lib/postgresql/data 
+# Setup host directory (run before first container start):
+# Local directory:
+# mkdir -p /opt/hftamayo/boabsences/data
+# chown -R 999:999 /opt/hftamayo/boabsences/data  # PostgreSQL user in container
+
+# Or mount NAS/SAN first, then create directory:
+# mount -t nfs nas-server:/databases /mnt/nas
+# mkdir -p /mnt/nas/boabsenses-postgres-data
+# chown -R 999:999 /mnt/nas/boabsenses-postgres-data
