@@ -28,9 +28,10 @@ version:
 
 # Common seeding configuration
 seed:
-  development: ${SEED_DEVELOPMENT:false}
-  production: ${SEED_PRODUCTION:false}
-
+  enabled: ${SEED_ENABLED:false}
+  fail-fast: true
+  include:
+    - companies.yaml
 pagination:
   default-page-size: 5
   max-page-size: 100
