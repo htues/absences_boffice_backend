@@ -1,15 +1,20 @@
 spring:
+  profiles:
+    active: ${EXECUTION_MODE:development}
   application:
     name: absences-backoffice
+    description: "Absences Back Office"
+    version: "0.0.1"
   flyway:
     enabled: true
 
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${DOCKER_INTERNAL_PORT:8080}
 
 logging:
   level:
     root: INFO
+    com.hftamayo.java.absencesbobe: DEBUG
 
 version:
   api:
@@ -21,11 +26,17 @@ version:
       version-header: X-API-Version
       build-header: X-Build-Version
 
+# Common seeding configuration
+seed:
+  development: ${SEED_DEVELOPMENT:false}
+  production: ${SEED_PRODUCTION:false}
+
 pagination:
   default-page-size: 5
   max-page-size: 100
   method: ${PAGINATION_METHOD:offset}
 
+# Default rate limiting configuration
 rate:
   limiter:
     default:
@@ -33,6 +44,14 @@ rate:
       refill-rate: 10
       refill-duration: PT1M
 
-app:
-  environment: ${APP_ENV:dev}
+frontend:
+  origins: ${FRONTEND_ORIGINS:http://localhost:5173}
 
+# Common test user configuration
+test:
+  user:
+    email: test@example.com
+    password: ${TEST_USER_PASSWORD:123}
+
+app:
+  environment: ${EXECUTION_MODE:development}
