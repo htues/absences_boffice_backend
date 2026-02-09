@@ -8,5 +8,5 @@ import java.util.List;
 public record SeedProperties(
         boolean enabled,
         boolean failFast,
-        List<String> include
+        List<String> catalogs
 ) {}

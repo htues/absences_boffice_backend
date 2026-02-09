@@ -1,15 +1,16 @@
-package com.hftamayo.absencesbobe.shared.infrastructure.seed;
+package com.hftamayo.absencesbobe.features.seeding.adapters.persistence;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import lombok.AllArgsConstructor;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
 
 @Component
+@AllArgsConstructor
 public class SeedYamlLoader {
-    private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
+    private final ObjectMapper yamlMapper;
 
     public <T> T loadFromClasspath(String classpathLocation, Class<T> type) {
         try (InputStream in = new ClassPathResource(classpathLocation).getInputStream()) {

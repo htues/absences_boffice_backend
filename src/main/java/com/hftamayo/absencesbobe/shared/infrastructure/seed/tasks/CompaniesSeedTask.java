@@ -4,7 +4,7 @@ import com.hftamayo.absencesbobe.features.companies.application.ports.in.Company
 import com.hftamayo.absencesbobe.features.companies.domain.Company;
 import com.hftamayo.absencesbobe.shared.application.result.Result;
 import com.hftamayo.absencesbobe.shared.infrastructure.seed.SeedTask;
-import com.hftamayo.absencesbobe.shared.infrastructure.seed.SeedYamlLoader;
+import com.hftamayo.absencesbobe.features.seeding.adapters.persistence.SeedYamlLoader;
 import com.hftamayo.absencesbobe.shared.web.constants.ApiResponseDescriptor;
 import com.hftamayo.absencesbobe.shared.web.constants.ErrorApiResponse;
 import org.slf4j.Logger;
