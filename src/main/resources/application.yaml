@@ -26,13 +26,6 @@ version:
       version-header: X-API-Version
       build-header: X-Build-Version
 
-# Common seeding configuration
-seed:
-  enabled: ${SEED_ENABLED:false}
-  fail-fast: true
-  catalogs:
-    - companies.yaml
-
 pagination:
   default-page-size: 5
   max-page-size: 100
