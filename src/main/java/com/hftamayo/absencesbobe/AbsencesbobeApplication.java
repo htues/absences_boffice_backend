@@ -19,7 +19,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 public class AbsencesbobeApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(Main.class, args);
+		SpringApplication.run(AbsencesbobeApplication.class, args);
 	}
 
 	@EventListener(ApplicationReadyEvent.class)
