@@ -30,8 +30,9 @@ version:
 seed:
   enabled: ${SEED_ENABLED:false}
   fail-fast: true
-  include:
+  catalogs:
     - companies.yaml
+
 pagination:
   default-page-size: 5
   max-page-size: 100
