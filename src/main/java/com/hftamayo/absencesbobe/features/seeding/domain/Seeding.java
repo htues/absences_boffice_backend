@@ -16,6 +16,7 @@ public class Seeding {
     private final Scope scope;
     private final String taskId;
     private final Status status;
+    private final boolean active;
 
     private final AuditInfo auditInfo;
 
@@ -25,7 +26,8 @@ public class Seeding {
             Scope scope,
             String taskId,
             Status status,
-            AuditInfo auditInfo
+            AuditInfo auditInfo,
+            boolean active
     ) {
         this.id = id;
         this.seedVersion = requireNonNull(seedVersion, "seedVersion");
@@ -33,10 +35,11 @@ public class Seeding {
         this.taskId = requireText(taskId, "taskId");
         this.status = requireNonNull(status, "status");
         this.auditInfo = auditInfo == null ? AuditInfo.empty() : auditInfo;
+        this.active = active;
     }
 
-    public static Seeding createNew(Instant seedVersion, Scope scope, String taskId, Status status) {
-        return new Seeding(null, seedVersion, scope, taskId, status, AuditInfo.empty());
+    public static Seeding createNew(Instant seedVersion, Scope scope, String taskId, Status status, boolean active) {
+        return new Seeding(null, seedVersion, scope, taskId, status, AuditInfo.empty(), active);
     }
 
     public static Seeding rehydrate(
@@ -45,9 +48,10 @@ public class Seeding {
             Scope scope,
             String taskId,
             Status status,
-            AuditInfo auditInfo
+            AuditInfo auditInfo,
+            boolean active
     ) {
-        return new Seeding(id, seedVersion, scope, taskId, status, auditInfo);
+        return new Seeding(id, seedVersion, scope, taskId, status, auditInfo, active);
     }
 
     // Same “audit convenience getters” pattern as Company

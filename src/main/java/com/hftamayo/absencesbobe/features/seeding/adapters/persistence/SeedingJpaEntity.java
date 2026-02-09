@@ -55,6 +55,10 @@ public class SeedingJpaEntity {
     private Seeding.Status status;
 
     @Setter
+    @Column(name = "active", nullable = false)
+    private boolean active;
+
+    @Setter
     @Column(name = "executed_at", nullable = false)
     private Instant executedAt;
 
