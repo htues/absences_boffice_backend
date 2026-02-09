@@ -8,8 +8,10 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.event.EventListener;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
+@EnableJpaAuditing
 @Import(com.hftamayo.absencesbobe.shared.web.jackson.JacksonTrimmingConfig.class)
 @EnableConfigurationProperties
 @RequiredArgsConstructor
