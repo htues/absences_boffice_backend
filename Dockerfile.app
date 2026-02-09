@@ -77,5 +77,6 @@ ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS org.springframework.boot.loader.la
 
 #specific platform
 #docker buildx build --no-cache --platform linux/amd64 -t hftamayo/absencesbobe:0.0.1 -f Dockerfile.app .
+#docker buildx build --no-cache -t hftamayo/absencesbobe:0.0.1 -f Dockerfile.app .
 
 #docker run -d --name absencesbobe --network developer_network -p 8081:8080 --env-file .env hftamayo/absencesbobe:0.0.1
