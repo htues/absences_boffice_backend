@@ -19,13 +19,17 @@ RUN ./mvnw dependency:go-offline -B
 COPY src src
 
 # Build the application with production profile
-RUN ./mvnw -B -DskipTests clean package
+# RUN ./mvnw -B -DskipTests clean package
+RUN ./mvnw -B -Dskip.tests=true -Dskip.integration.tests=true -Dskip.coverage.check=true clean package
 
 # Stage 2: Extract layered JAR for faster startup
 # UPDATED: Changed to Java 21
 FROM eclipse-temurin:21-jdk-alpine AS extract
 WORKDIR /workspace/app
-COPY --from=build /workspace/app/target/*.jar app.jar
+
+# Copy ONLY the Spring Boot repackaged jar (avoid *.jar.original)
+COPY --from=build /workspace/app/target/*-SNAPSHOT.jar app.jar
+
 RUN java -Djarmode=layertools -jar app.jar extract
 
 # Stage 3: Run the application
@@ -68,6 +72,7 @@ ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+OptimizeS
 
 # Ejecutar la aplicación
 # UPDATED: Added 'exec' and used the correct Launcher for Spring Boot 3.2+ (which includes 4.0 snapshots)
+# Ejecutar la aplicación
 ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS org.springframework.boot.loader.launch.JarLauncher"]
 
 #how to run this file:
@@ -77,6 +82,6 @@ ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS org.springframework.boot.loader.la
 
 #specific platform
 #docker buildx build --no-cache --platform linux/amd64 -t hftamayo/absencesbobe:0.0.1 -f Dockerfile.app .
-#docker buildx build --no-cache -t hftamayo/absencesbobe:0.0.1 -f Dockerfile.app .
+#docker build --no-cache -t hftamayo/absencesbobe:0.0.1 -f Dockerfile.app .
 
 #docker run -d --name absencesbobe --network developer_network -p 8081:8080 --env-file .env hftamayo/absencesbobe:0.0.1
