@@ -2,19 +2,18 @@ FROM postgres:14-alpine
 
 RUN apk add --no-cache bash
 
-WORKDIR /docker-entrypoint-initdb.d
-
-COPY db.sql .
-
 EXPOSE 5432
 
 # PostgreSQL data directory - use bind mount to host OS for data persistence
+# previous command before docker container:
+# sudo mkdir -p /opt/htamayo/boabsences/data
+# sudo chown -R 70:70 /opt/htamayo/boabsences/data
+# sudo chmod 700 /opt/htamayo/boabsences/data
+
 # Data will be stored on host at the path specified in docker run command
 VOLUME ["/var/lib/postgresql/data"]
 
 CMD ["docker-entrypoint.sh", "postgres"]
-#to run this file:
-#sudo chmod 755 /opt/htamayo/absencesbo/data
 #si necesito regenerar el container debo borrar toda la carpeta data
 #sudo rm -rf data/
 #docker build --no-cache -f Dockerfile.pg.onpremise -t your-image-name .
