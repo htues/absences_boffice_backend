@@ -10,11 +10,12 @@ public class JacksonTrimmingConfig {
 
     @Bean
     public Jackson2ObjectMapperBuilderCustomizer trimStringsCustomizer() {
-        System.out.println("JacksonTrimmingConfig loaded automatically");
         return builder -> {
             SimpleModule module = new SimpleModule();
             module.addDeserializer(String.class, new TrimmingStringDeserializer());
-            builder.modules(module);
+
+            // IMPORTANT: don't replace Boot's default modules (JavaTimeModule, etc.)
+            builder.modulesToInstall(module);
         };
     }
 }
