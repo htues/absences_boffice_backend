@@ -122,10 +122,20 @@ public class CompanyCommandController {
     ) {
         try {
             Result<T, ? extends ApiResponseDescriptor> result = action.get();
+
+            if (result == null || result.isError()) {
+                log.debug("Command returned error result: error={}", result != null ? result.error() : null);
+            }
+
             return ApiResponseFactory.fromResult(result, successCode, null);
         } catch (Exception ex) {
-            log.error("Unhandled exception while processing company command request", ex);
-            return ApiResponseFactory.unknownError(null);
+            return catchUnknownError("CompanyCommandController.handle", ex);
         }
     }
+
+    private ResponseEntity<ApiResponseDto<?>> catchUnknownError(String where, Exception ex) {
+        log.error("Unhandled exception at {}", where, ex);
+        return ApiResponseFactory.unknownError(null);
+    }
+
 }
