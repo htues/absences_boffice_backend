@@ -1,6 +1,7 @@
 package com.hftamayo.absencesbobe;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -14,6 +15,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 @Import(com.hftamayo.absencesbobe.shared.web.jackson.JacksonTrimmingConfig.class)
 @EnableConfigurationProperties
 @RequiredArgsConstructor
+@Slf4j
 
 public class AbsencesbobeApplication {
 
@@ -23,11 +25,9 @@ public class AbsencesbobeApplication {
 
 	@EventListener(ApplicationReadyEvent.class)
 	public void applicationReady() {
-		System.out.println("\n========================================================");
-		System.out.println("        The project is up and running!");
+		log.info("        The project is up and running!");
 //        System.out.println("        Version: " + com.hftamayo.java.todo.utilities.version.VersionConstants.getFullVersion());
 //        System.out.println("        API Version: " + com.hftamayo.java.todo.utilities.version.VersionConstants.getCurrentApiVersion());
-		System.out.println("========================================================\n");
 	}
 
 }
