@@ -7,11 +7,13 @@ import com.hftamayo.absencesbobe.shared.application.result.Result;
 import com.hftamayo.absencesbobe.shared.web.constants.ApiResponseDescriptor;
 import com.hftamayo.absencesbobe.shared.web.constants.ErrorApiResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class CompanyCommandService implements CompanyCommandPort {
 
@@ -91,7 +93,7 @@ public class CompanyCommandService implements CompanyCommandPort {
 
     @Transactional
     @Override
-    public Result<Void, ? extends ApiResponseDescriptor> deleteCompany(Long id) {
+    public Result<Company, ? extends ApiResponseDescriptor> deleteCompany(Long id) {
         try {
             if (id == null || id <= 0) {
                 return Result.error(ErrorApiResponse.VALIDATION_ERROR);
@@ -101,16 +103,17 @@ public class CompanyCommandService implements CompanyCommandPort {
             return companyRepository.findByIdIncludingDeleted(id)
                     .map(existing -> {
                         if (existing.isDeleted()) {
-                            return Result.<Void, ApiResponseDescriptor>ok(null);
+                            return Result.<Company, ApiResponseDescriptor>ok(existing); // idempotent
                         }
 
                         existing.markDeleted();
-                        companyRepository.save(existing);
-                        return Result.<Void, ApiResponseDescriptor>ok(null);
+                        Company saved = companyRepository.save(existing);
+                        return Result.<Company, ApiResponseDescriptor>ok(saved);
                     })
                     .orElseGet(() -> Result.error(ErrorApiResponse.NOT_FOUND));
 
         } catch (Exception ex) {
+            log.error("deleteCompany failed for id={}", id, ex);
             return Result.error(ErrorApiResponse.UNKNOWN_ERROR);
         }
     }

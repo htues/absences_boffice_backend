@@ -9,7 +9,7 @@ public interface CompanyCommandPort {
 
     Result<Company, ? extends ApiResponseDescriptor> updateCompany(Long id, String name, String description, String address);
 
-    Result<Void, ? extends ApiResponseDescriptor> deleteCompany(Long id);
+    Result<Company, ? extends ApiResponseDescriptor> deleteCompany(Long id);
 
     Result<Company, ? extends ApiResponseDescriptor> deactivateCompany(Long id);
 
