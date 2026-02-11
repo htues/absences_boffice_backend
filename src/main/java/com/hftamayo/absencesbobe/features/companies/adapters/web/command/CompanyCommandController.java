@@ -15,6 +15,7 @@ import com.hftamayo.absencesbobe.shared.web.factory.ApiResponseFactory;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +24,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.function.Supplier;
 
 @AllArgsConstructor
+@Slf4j
 @RestController
 @RequestMapping("/api/${version.api.current}/companies")
 public class CompanyCommandController {
@@ -122,6 +124,7 @@ public class CompanyCommandController {
             Result<T, ? extends ApiResponseDescriptor> result = action.get();
             return ApiResponseFactory.fromResult(result, successCode, null);
         } catch (Exception ex) {
+            log.error("Unhandled exception while processing company command request", ex);
             return ApiResponseFactory.unknownError(null);
         }
     }
