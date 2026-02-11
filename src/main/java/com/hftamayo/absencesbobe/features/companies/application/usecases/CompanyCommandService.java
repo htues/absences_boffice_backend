@@ -139,4 +139,29 @@ public class CompanyCommandService implements CompanyCommandPort {
             return Result.error(ErrorApiResponse.UNKNOWN_ERROR);
         }
     }
+
+    @Transactional
+    @Override
+    public Result<Company, ? extends ApiResponseDescriptor> activateCompany(Long id) {
+        try {
+            if (id == null || id <= 0) {
+                return Result.error(ErrorApiResponse.VALIDATION_ERROR);
+            }
+
+            return companyRepository.findById(id)
+                    .map(existing -> {
+                        if (existing.isActive()) {
+                            return Result.<Company, ApiResponseDescriptor>ok(existing); // idempotent
+                        }
+
+                        existing.activate();
+                        Company saved = companyRepository.save(existing);
+                        return Result.<Company, ApiResponseDescriptor>ok(saved);
+                    })
+                    .orElseGet(() -> Result.error(ErrorApiResponse.NOT_FOUND));
+
+        } catch (Exception ex) {
+            return Result.error(ErrorApiResponse.UNKNOWN_ERROR);
+        }
+    }
 }

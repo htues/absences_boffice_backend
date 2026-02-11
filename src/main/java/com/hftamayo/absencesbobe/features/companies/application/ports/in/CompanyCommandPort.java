@@ -13,4 +13,6 @@ public interface CompanyCommandPort {
 
     Result<Company, ? extends ApiResponseDescriptor> deactivateCompany(Long id);
 
+    Result<Company, ? extends ApiResponseDescriptor> activateCompany(Long id);
+
 }

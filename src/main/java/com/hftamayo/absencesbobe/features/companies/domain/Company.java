@@ -58,6 +58,10 @@ public class Company {
         this.active = false;
     }
 
+    public void activate() {
+        this.active = true;
+    }
+
     public void markDeleted() {
         this.deleted = true;
         deactivate();
