@@ -42,7 +42,7 @@ public class CompanyCommandService implements CompanyCommandPort {
             return Result.error(ErrorApiResponse.ENTITY_EXISTS);
 
         } catch (Exception ex) {
-            return Result.error(ErrorApiResponse.UNKNOWN_ERROR);
+            return catchUnknownError("createCompany", company.getId(), ex);
         }
     }
 
@@ -87,7 +87,7 @@ public class CompanyCommandService implements CompanyCommandPort {
             return Result.error(ErrorApiResponse.ENTITY_EXISTS);
 
         } catch (Exception ex) {
-            return Result.error(ErrorApiResponse.UNKNOWN_ERROR);
+            return catchUnknownError("updateCompany", id, ex);
         }
     }
 
@@ -113,8 +113,7 @@ public class CompanyCommandService implements CompanyCommandPort {
                     .orElseGet(() -> Result.error(ErrorApiResponse.NOT_FOUND));
 
         } catch (Exception ex) {
-            log.error("deleteCompany failed for id={}", id, ex);
-            return Result.error(ErrorApiResponse.UNKNOWN_ERROR);
+            return catchUnknownError("deleteCompany", id, ex);
         }
     }
 
@@ -139,7 +138,7 @@ public class CompanyCommandService implements CompanyCommandPort {
                     .orElseGet(() -> Result.error(ErrorApiResponse.NOT_FOUND));
 
         } catch (Exception ex) {
-            return Result.error(ErrorApiResponse.UNKNOWN_ERROR);
+            return catchUnknownError("deactivateCompany", id, ex);
         }
     }
 
@@ -164,7 +163,12 @@ public class CompanyCommandService implements CompanyCommandPort {
                     .orElseGet(() -> Result.error(ErrorApiResponse.NOT_FOUND));
 
         } catch (Exception ex) {
-            return Result.error(ErrorApiResponse.UNKNOWN_ERROR);
+            return catchUnknownError("activateCompany", id, ex);
         }
+    }
+
+    private <T> Result<T, ? extends ApiResponseDescriptor> catchUnknownError(String method, Long id, Exception ex) {
+        log.error("method={} failed for id={}", method, id, ex);
+        return Result.error(ErrorApiResponse.UNKNOWN_ERROR);
     }
 }
