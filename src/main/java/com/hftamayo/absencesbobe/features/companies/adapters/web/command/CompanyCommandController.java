@@ -76,12 +76,27 @@ public class CompanyCommandController {
 
     @PutMapping("/{id}/activate")
     public ResponseEntity<ApiResponseDto<?>> activateCompany(
-            @PathVariable Long id,
+            @PathVariable @Positive Long id,
             HttpServletRequest request
     ) {
         return handle(
                 () -> mapResult(
                         companyCommandPort.activateCompany(id),
+                        companyResponseMapper::toDto
+                ),
+                SuccessApiResponse.UPDATED,
+                request
+        );
+    }
+
+    @PutMapping("/{id}/restore")
+    public ResponseEntity<ApiResponseDto<?>> restoreCompany(
+            @PathVariable @Positive Long id,
+            HttpServletRequest request
+    ) {
+        return handle(
+                () -> mapResult(
+                        companyCommandPort.restoreCompany(id),
                         companyResponseMapper::toDto
                 ),
                 SuccessApiResponse.UPDATED,

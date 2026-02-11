@@ -69,6 +69,11 @@ public class CompanyJpaEntity {
         this.isActive = false;
     }
 
+    public void restore() {
+        this.isDeleted = false;
+        this.isActive = true;
+    }
+
     public void deactivate() {
         this.isActive = false;
     }

@@ -66,6 +66,12 @@ public class Company {
         this.deleted = true;
         deactivate();
     }
+
+    public void restore(){
+        this.deleted = false;
+        activate();
+    }
+
     public Long getCreatedBy() {
         return auditInfo.createdBy();
     }
