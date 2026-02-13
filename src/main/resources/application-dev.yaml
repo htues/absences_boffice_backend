@@ -4,7 +4,7 @@ spring:
       on-profile: dev
 
   datasource:
-    url: jdbc:postgresql://${POSTGRES_HOST:pgdevelopment}:${POSTGRES_PORT:5432}/${DB_NAME:absencesbo}
+    url: jdbc:postgresql://${POSTGRES_HOST:pgdevelopment}:${POSTGRES_PORT:5432}/${POSTGRES_DB:absencesbo}
     username: ${POSTGRES_USER:app}
     password: ${POSTGRES_PASSWORD:change_me}
     driver-class-name: org.postgresql.Driver
