@@ -1,0 +1,55 @@
+package com.hftamayo.absencesbobe.shared.audit;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.AuditorAware;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+
+import java.util.Optional;
+
+@Configuration
+@EnableJpaAuditing(auditorAwareRef = "auditorProvider")
+public class JpaAuditingConfig {
+
+    /**
+     * Which JWT claim contains the numeric user id.
+     * Common choices: "user_id", "uid", sometimes "sub" (if you set it to the id).
+     */
+    @Bean
+    public AuditorAware<Long> auditorProvider(
+            @Value("${security.jwt.user-id-claim:user_id}") String userIdClaim
+    ) {
+        return () -> {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !auth.isAuthenticated()) {
+                return Optional.empty();
+            }
+
+            if (auth instanceof JwtAuthenticationToken jwtAuth) {
+                Object claimValue = jwtAuth.getToken().getClaims().get(userIdClaim);
+                return parseLongClaim(claimValue);
+            }
+
+            // JWT not wired yet / other auth type
+            return Optional.empty();
+        };
+    }
+
+    private static Optional<Long> parseLongClaim(Object claimValue) {
+        if (claimValue == null) return Optional.empty();
+        if (claimValue instanceof Long l) return Optional.of(l);
+        if (claimValue instanceof Integer i) return Optional.of(i.longValue());
+        if (claimValue instanceof String s) {
+            try {
+                return Optional.of(Long.parseLong(s));
+            } catch (NumberFormatException ignored) {
+                return Optional.empty();
+            }
+        }
+        return Optional.empty();
+    }
+}

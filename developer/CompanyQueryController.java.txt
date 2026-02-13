@@ -1,0 +1,110 @@
+package com.hftamayo.java.boabsenses.controller.query;
+
+import com.hftamayo.java.boabsenses.dto.ApiResultDto;
+import com.hftamayo.java.boabsenses.dto.query.pagination.IPaginatedDataContract;
+import com.hftamayo.java.boabsenses.utilities.web.UnexpectedExceptionHandler;
+import com.hftamayo.java.boabsenses.mapper.ApiResponseMapper;
+import com.hftamayo.java.boabsenses.services.query.ICompanyQueryService;
+import com.hftamayo.java.boabsenses.utilities.web.ApiResponseUtils;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import com.hftamayo.java.boabsenses.dto.query.pagination.QueryParamsDto;
+import com.hftamayo.java.boabsenses.utilities.notification.Result;
+import com.hftamayo.java.boabsenses.exception.BusinessError;
+import com.hftamayo.java.boabsenses.dto.response.CompanyResponseDto;
+import com.hftamayo.java.boabsenses.utilities.filtering.FilterCriterion;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@AllArgsConstructor
+@RestController
+@RequestMapping("/api/${version.api.current}/companies")
+public class CompanyQueryController {
+    private final ICompanyQueryService companyQueryService;
+    private final UnexpectedExceptionHandler unexpectedExceptionHandler;
+
+    @GetMapping(value = "/list")
+    public ResponseEntity<ApiResultDto<?>> getCompanies(QueryParamsDto params, HttpServletRequest request) {
+        try {
+            Result<IPaginatedDataContract<CompanyResponseDto>, BusinessError> result =
+                    companyQueryService.getCompanies(params);
+
+            return ApiResponseUtils.build(request, result,
+                    ApiResponseMapper.OperationType.READ, CompanyQueryController.class);
+        } catch (Exception e) {
+            return unexpectedExceptionHandler.handle(request, e, CompanyQueryController.class);
+        }
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<ApiResultDto<?>> getCompaniesByCriteria(QueryParamsDto params,
+                                                                  HttpServletRequest request) {
+        try {
+            Result<IPaginatedDataContract<CompanyResponseDto>, BusinessError> result =
+                    companyQueryService.getCompaniesByCriteria(params);
+            return ApiResponseUtils.build(request, result,
+                    ApiResponseMapper.OperationType.READ, CompanyQueryController.class);
+        } catch (Exception e) {
+            return unexpectedExceptionHandler.handle(request, e, CompanyQueryController.class);
+        }
+    }
+
+
+    @GetMapping(value = "{id}")
+    public ResponseEntity<ApiResultDto<?>> getCompanyDetailsById(@PathVariable Long id, HttpServletRequest request) {
+        try {
+            Result<CompanyResponseDto, BusinessError> result =
+                    companyQueryService.getCompanyDetailsById(id);
+
+            return ApiResponseUtils.build(request, result,
+                    ApiResponseMapper.OperationType.READ, CompanyQueryController.class);
+        } catch (Exception e) {
+            return unexpectedExceptionHandler.handle(request, e, CompanyQueryController.class);
+        }
+    }
+
+    @GetMapping("/search/{id}")
+    public ResponseEntity<ApiResultDto<?>> getCompanyByCriteria(@PathVariable Long id,
+                                                                QueryParamsDto params,
+                                                                HttpServletRequest request) {
+        try {
+            QueryParamsDto enrichedParams = enrichParamsWithId(params, id);
+            Result<CompanyResponseDto, BusinessError> result =
+                    companyQueryService.getCompanyByCriteria(enrichedParams);
+            return ApiResponseUtils.build(request, result,
+                    ApiResponseMapper.OperationType.READ, CompanyQueryController.class);
+        } catch (Exception e) {
+            return unexpectedExceptionHandler.handle(request, e, CompanyQueryController.class);
+        }
+    }
+
+    // Helper methods
+
+    private QueryParamsDto enrichParamsWithId(QueryParamsDto params, Long id) {
+        if (params == null) {
+            params = QueryParamsDto.builder().build();
+        }
+        List<FilterCriterion> filters = params.filters() != null ? new ArrayList<>(params.filters()) : new ArrayList<>();
+        // Remove existing id filter if present, then add path variable id (path takes precedence)
+        filters.removeIf(f -> "id".equals(f.field()));
+        FilterCriterion idFilter = new FilterCriterion("id", "EQ", String.valueOf(id), "LONG");
+        filters.add(idFilter);
+        return QueryParamsDto.builder()
+                .page(params.page())
+                .limit(params.limit())
+                .isActive(params.isActive())
+                .isDeleted(params.isDeleted())
+                .sortBy(params.sortBy())
+                .sortOrder(params.sortOrder())
+                .filters(filters)
+                .build();
+    }
+}
+
+
