@@ -143,7 +143,7 @@
 					</excludes>
 
 					<!-- JaCoCo injects into argLine -->
-					<argLine>@{argLine}</argLine>
+					<argLine>@{argLine} -XX:+EnableDynamicAgentLoading</argLine>
 				</configuration>
 			</plugin>
 
@@ -159,7 +159,7 @@
 						<include>**/*IntegrationTest.java</include>
 					</includes>
 
-					<argLine>@{argLine}</argLine>
+					<argLine>@{argLine} -XX:+EnableDynamicAgentLoading</argLine>
 				</configuration>
 				<executions>
 					<execution>
