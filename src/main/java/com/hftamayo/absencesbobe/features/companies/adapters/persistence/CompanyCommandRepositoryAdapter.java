@@ -1,6 +1,6 @@
 package com.hftamayo.absencesbobe.features.companies.adapters.persistence;
 
-import com.hftamayo.absencesbobe.features.companies.application.ports.out.CompanyRepositoryPort;
+import com.hftamayo.absencesbobe.features.companies.application.ports.out.CompanyCommandRepositoryPort;
 import com.hftamayo.absencesbobe.features.companies.domain.Company;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -9,7 +9,7 @@ import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
-public class CompanyRepositoryAdapter implements CompanyRepositoryPort {
+public class CompanyCommandRepositoryAdapter implements CompanyCommandRepositoryPort {
 
     private final CompanySpringDataRepository jpaRepository;
     private final CompanyPersistenceMapper mapper;

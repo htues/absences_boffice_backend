@@ -1,7 +1,7 @@
 package com.hftamayo.absencesbobe.features.companies.application.usecases;
 
 import com.hftamayo.absencesbobe.features.companies.application.ports.in.CompanyCommandPort;
-import com.hftamayo.absencesbobe.features.companies.application.ports.out.CompanyRepositoryPort;
+import com.hftamayo.absencesbobe.features.companies.application.ports.out.CompanyCommandRepositoryPort;
 import com.hftamayo.absencesbobe.features.companies.domain.Company;
 import com.hftamayo.absencesbobe.shared.application.result.Result;
 import com.hftamayo.absencesbobe.shared.web.constants.ApiResponseDescriptor;
@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class CompanyCommandService implements CompanyCommandPort {
 
-    private final CompanyRepositoryPort companyRepository;
+    private final CompanyCommandRepositoryPort companyRepository;
 
     @Transactional
     @Override

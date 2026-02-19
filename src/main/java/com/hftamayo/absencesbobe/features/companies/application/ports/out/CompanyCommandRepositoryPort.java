@@ -4,7 +4,7 @@ import com.hftamayo.absencesbobe.features.companies.domain.Company;
 
 import java.util.Optional;
 
-public interface CompanyRepositoryPort {
+public interface CompanyCommandRepositoryPort {
 
     Optional<Company> findById(Long id);
 

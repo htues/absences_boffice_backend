@@ -2,7 +2,7 @@ package com.hftamayo.absencesbobe.features.companies.adaperts.persistence;
 
 import com.hftamayo.absencesbobe.features.companies.adapters.persistence.CompanyJpaEntity;
 import com.hftamayo.absencesbobe.features.companies.adapters.persistence.CompanyPersistenceMapper;
-import com.hftamayo.absencesbobe.features.companies.adapters.persistence.CompanyRepositoryAdapter;
+import com.hftamayo.absencesbobe.features.companies.adapters.persistence.CompanyCommandRepositoryAdapter;
 import com.hftamayo.absencesbobe.features.companies.adapters.persistence.CompanySpringDataRepository;
 import com.hftamayo.absencesbobe.features.companies.domain.Company;
 import org.junit.jupiter.api.DisplayName;
@@ -27,7 +27,7 @@ class CompanyRepositoryAdapterTest {
     private CompanyPersistenceMapper mapper;
 
     @InjectMocks
-    private CompanyRepositoryAdapter adapter;
+    private CompanyCommandRepositoryAdapter adapter;
 
     @Test
     @DisplayName("findById: uses findByIdAndIsDeletedFalse and maps entity to domain")
