@@ -3,6 +3,7 @@ package com.hftamayo.absencesbobe.features.companies.application.usecases;
 import com.hftamayo.absencesbobe.features.companies.application.ports.in.CompanyQueryPort;
 import com.hftamayo.absencesbobe.features.companies.application.ports.out.CompanyQueryRepositoryPort;
 import com.hftamayo.absencesbobe.features.companies.domain.Company;
+import com.hftamayo.absencesbobe.shared.application.errors.UnknownErrorHandler;
 import com.hftamayo.absencesbobe.shared.application.result.Result;
 import com.hftamayo.absencesbobe.shared.web.constants.ApiResponseDescriptor;
 import com.hftamayo.absencesbobe.shared.web.constants.ErrorApiResponse;
@@ -24,13 +25,8 @@ public class CompanyQueryService implements CompanyQueryPort {
             Page<Company> page = companyRepository.getActiveCompanies(pageable);
             return Result.ok(page);
         } catch (Exception ex) {
-            return catchUnknownError("getActiveCompanies", null, ex);
+            return UnknownErrorHandler.catchUnknownError(log,"getActiveCompanies", null, ex);
         }
-    }
-
-    private <T> Result<T, ? extends ApiResponseDescriptor> catchUnknownError(String method, Long id, Exception ex) {
-        log.error("method={} failed for id={}", method, id, ex);
-        return Result.error(ErrorApiResponse.UNKNOWN_ERROR);
     }
 
 }
