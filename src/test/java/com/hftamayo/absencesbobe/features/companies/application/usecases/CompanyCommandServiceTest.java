@@ -1,6 +1,6 @@
 package com.hftamayo.absencesbobe.features.companies.application.usecases;
 
-import com.hftamayo.absencesbobe.features.companies.application.ports.out.CompanyRepositoryPort;
+import com.hftamayo.absencesbobe.features.companies.application.ports.out.CompanyCommandRepositoryPort;
 import com.hftamayo.absencesbobe.features.companies.domain.Company;
 import com.hftamayo.absencesbobe.shared.application.result.Result;
 import com.hftamayo.absencesbobe.shared.web.constants.ApiResponseDescriptor;
@@ -17,12 +17,12 @@ import static org.mockito.Mockito.*;
 
 class CompanyCommandServiceTest {
 
-    private CompanyRepositoryPort companyRepository;
+    private CompanyCommandRepositoryPort companyRepository;
     private CompanyCommandService service;
 
     @BeforeEach
     void setUp() {
-        companyRepository = mock(CompanyRepositoryPort.class);
+        companyRepository = mock(CompanyCommandRepositoryPort.class);
         service = new CompanyCommandService(companyRepository);
     }
 

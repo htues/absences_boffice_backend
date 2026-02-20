@@ -1,8 +1,9 @@
 package com.hftamayo.absencesbobe.features.companies.application.usecases;
 
 import com.hftamayo.absencesbobe.features.companies.application.ports.in.CompanyCommandPort;
-import com.hftamayo.absencesbobe.features.companies.application.ports.out.CompanyRepositoryPort;
+import com.hftamayo.absencesbobe.features.companies.application.ports.out.CompanyCommandRepositoryPort;
 import com.hftamayo.absencesbobe.features.companies.domain.Company;
+import com.hftamayo.absencesbobe.shared.application.errors.UnknownErrorHandler;
 import com.hftamayo.absencesbobe.shared.application.result.Result;
 import com.hftamayo.absencesbobe.shared.web.constants.ApiResponseDescriptor;
 import com.hftamayo.absencesbobe.shared.web.constants.ErrorApiResponse;
@@ -17,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class CompanyCommandService implements CompanyCommandPort {
 
-    private final CompanyRepositoryPort companyRepository;
+    private final CompanyCommandRepositoryPort companyRepository;
 
     @Transactional
     @Override
@@ -42,7 +43,7 @@ public class CompanyCommandService implements CompanyCommandPort {
             return Result.error(ErrorApiResponse.ENTITY_EXISTS);
 
         } catch (Exception ex) {
-            return catchUnknownError("createCompany", company.getId(), ex);
+            return UnknownErrorHandler.catchUnknownError(log,"createCompany", company.getId(), ex);
         }
     }
 
@@ -87,7 +88,7 @@ public class CompanyCommandService implements CompanyCommandPort {
             return Result.error(ErrorApiResponse.ENTITY_EXISTS);
 
         } catch (Exception ex) {
-            return catchUnknownError("updateCompany", id, ex);
+            return UnknownErrorHandler.catchUnknownError(log,"updateCompany", id, ex);
         }
     }
 
@@ -112,7 +113,7 @@ public class CompanyCommandService implements CompanyCommandPort {
                     })
                     .orElseGet(() -> Result.error(ErrorApiResponse.NOT_FOUND));
         } catch (Exception ex) {
-            return catchUnknownError("deleteCompany", id, ex);
+            return UnknownErrorHandler.catchUnknownError(log,"deleteCompany", id, ex);
         }
     }
 
@@ -137,7 +138,7 @@ public class CompanyCommandService implements CompanyCommandPort {
                     .orElseGet(() -> Result.error(ErrorApiResponse.NOT_FOUND));
 
         } catch (Exception ex) {
-            return catchUnknownError("restoreCompany", id, ex);
+            return UnknownErrorHandler.catchUnknownError(log,"restoreCompany", id, ex);
         }
     }
 
@@ -162,7 +163,7 @@ public class CompanyCommandService implements CompanyCommandPort {
                     .orElseGet(() -> Result.error(ErrorApiResponse.NOT_FOUND));
 
         } catch (Exception ex) {
-            return catchUnknownError("deactivateCompany", id, ex);
+            return UnknownErrorHandler.catchUnknownError(log,"deactivateCompany", id, ex);
         }
     }
 
@@ -187,12 +188,8 @@ public class CompanyCommandService implements CompanyCommandPort {
                     .orElseGet(() -> Result.error(ErrorApiResponse.NOT_FOUND));
 
         } catch (Exception ex) {
-            return catchUnknownError("activateCompany", id, ex);
+            return UnknownErrorHandler.catchUnknownError(log, "activateCompany", id, ex);
         }
     }
 
-    private <T> Result<T, ? extends ApiResponseDescriptor> catchUnknownError(String method, Long id, Exception ex) {
-        log.error("method={} failed for id={}", method, id, ex);
-        return Result.error(ErrorApiResponse.UNKNOWN_ERROR);
-    }
 }
