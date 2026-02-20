@@ -18,7 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class CompanyRepositoryAdapterTest {
+class CompanyCommandRepositoryAdapterTest {
 
     @Mock
     private CompanySpringDataRepository jpaRepository;
