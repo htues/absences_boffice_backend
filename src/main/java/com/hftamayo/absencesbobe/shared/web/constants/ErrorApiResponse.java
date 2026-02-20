@@ -1,8 +1,10 @@
 package com.hftamayo.absencesbobe.shared.web.constants;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public enum ErrorApiResponse implements ApiResponseDescriptor {
     BUSINESS_LOGIC_ERROR(400, "BUSINESS_LOGIC_VIOLATION"),
     UNAUTHORIZED(401, "UNAUTHORIZED_ACCESS"),
@@ -22,12 +24,6 @@ public enum ErrorApiResponse implements ApiResponseDescriptor {
 
     ErrorApiResponse(int statusCode, String messageKey) {
         this(DEFAULT_RESPONSE_TYPE, statusCode, messageKey);
-    }
-
-    ErrorApiResponse(String responseType, int statusCode, String messageKey) {
-        this.responseType = responseType;
-        this.statusCode = statusCode;
-        this.messageKey = messageKey;
     }
 
 }
