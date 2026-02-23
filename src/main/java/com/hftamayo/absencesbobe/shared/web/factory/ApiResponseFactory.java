@@ -8,12 +8,13 @@ import com.hftamayo.absencesbobe.shared.web.dto.ApiResponseDto;
 import com.hftamayo.absencesbobe.shared.web.dto.ErrorLogEventDto;
 import com.hftamayo.absencesbobe.shared.web.error.ErrorLogEventDescriptor;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.NoArgsConstructor;
 import org.springframework.http.ResponseEntity;
 
 import java.util.Objects;
 
+@NoArgsConstructor
 public final class ApiResponseFactory {
-    private ApiResponseFactory() {}
 
     /**
      * Main factory method: maps a Result from the application layer into a HTTP response
