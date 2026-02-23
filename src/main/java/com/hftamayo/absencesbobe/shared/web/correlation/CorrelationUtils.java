@@ -2,12 +2,12 @@ package com.hftamayo.absencesbobe.shared.web.correlation;
 
 import com.hftamayo.absencesbobe.shared.web.constants.CorrelationConstants;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+@NoArgsConstructor
 public final class CorrelationUtils {
-
-    private CorrelationUtils() {}
 
     public static String getCorrelationId(HttpServletRequest request) {
         Object attr = request.getAttribute(CorrelationConstants.ATTRIBUTE);

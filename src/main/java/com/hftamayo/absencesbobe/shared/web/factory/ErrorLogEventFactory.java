@@ -4,11 +4,10 @@ import com.hftamayo.absencesbobe.shared.web.correlation.CorrelationUtils;
 import com.hftamayo.absencesbobe.shared.web.dto.ErrorLogEventDto;
 import com.hftamayo.absencesbobe.shared.web.error.ErrorLogEventDescriptor;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor
 public final class ErrorLogEventFactory {
-
-    private ErrorLogEventFactory() {
-    }
 
     public static ErrorLogEventDto mapErrorLogEvent(Class<?> controllerClass,
                                                     ErrorLogEventDescriptor error,
