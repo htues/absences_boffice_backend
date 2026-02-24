@@ -16,6 +16,7 @@ public class ApiResponseDto<T> {
     private final String resultMessage;
 
     private final T data;
+    private final PaginationDto pagination;
 
     private final Instant timestamp;
     private final Long cacheTTL;
@@ -24,9 +25,19 @@ public class ApiResponseDto<T> {
      * Single entry-point for both success and error responses.
      * Pass either SuccessCode or ErrorCode (both implement ApiResponseDescriptor).
      */
+
     public static <T> ApiResponseDto<T> response(
             ApiResponseDescriptor code,
             T data,
+            Long cache
+    ) {
+        return response(code, data, null, cache);
+    }
+
+    public static <T> ApiResponseDto<T> response(
+            ApiResponseDescriptor code,
+            T data,
+            PaginationDto pagination,
             Long cache
     ) {
         return ApiResponseDto.<T>builder()
@@ -34,6 +45,7 @@ public class ApiResponseDto<T> {
                 .statusCode(code.getStatusCode())
                 .resultMessage(code.getMessageKey())
                 .data(data)
+                .pagination(pagination)
                 .timestamp(Instant.now())
                 .cacheTTL(cache)
                 .build();
@@ -43,7 +55,17 @@ public class ApiResponseDto<T> {
         return response(code, data, cache);
     }
 
-    public static ApiResponseDto<Void> fail(ErrorApiResponse code, Long cache) {
+    public static <T> ApiResponseDto<T> ok(
+            SuccessApiResponse code,
+            T data,
+            com.hftamayo.absencesbobe.shared.web.dto.PaginationDto pagination,
+            Long cache
+    ) {
+        return response(code, data, pagination, cache);
+    }
+
+    public static ApiResponseDto<Void> fail(
+            ErrorApiResponse code, Long cache) {
         return response(code, null, cache);
     }
 }

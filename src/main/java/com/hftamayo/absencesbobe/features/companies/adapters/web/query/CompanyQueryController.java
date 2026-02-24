@@ -9,9 +9,11 @@ import com.hftamayo.absencesbobe.shared.web.constants.ApiResponseDescriptor;
 import com.hftamayo.absencesbobe.shared.web.constants.ErrorApiResponse;
 import com.hftamayo.absencesbobe.shared.web.constants.SuccessApiResponse;
 import com.hftamayo.absencesbobe.shared.web.dto.ApiResponseDto;
+import com.hftamayo.absencesbobe.shared.web.dto.PaginationDto;
 import com.hftamayo.absencesbobe.shared.web.factory.ApiResponseFactory;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,13 +24,35 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-@AllArgsConstructor
+import java.util.List;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/${version.api.current}/companies")
 public class CompanyQueryController {
     private final CompanyQueryPort companyQueryPort;
     private final CompanyResponseMapper companyResponseMapper;
+
+    private final int defaultPageSize;
+    private final int maxPageSize;
+
+    @Autowired
+    public CompanyQueryController(
+            CompanyQueryPort companyQueryPort,
+            CompanyResponseMapper companyResponseMapper,
+            @Value("${pagination.default-page-size:10}") int defaultPageSize,
+            @Value("${pagination.max-page-size:100}") int maxPageSize
+    ) {
+        this.companyQueryPort = companyQueryPort;
+        this.companyResponseMapper = companyResponseMapper;
+        this.defaultPageSize = defaultPageSize;
+        this.maxPageSize = maxPageSize;
+    }
+
+    // Convenience ctor for unit tests (and non-Spring instantiation)
+    public CompanyQueryController(CompanyQueryPort companyQueryPort, CompanyResponseMapper companyResponseMapper) {
+        this(companyQueryPort, companyResponseMapper, 10, 100);
+    }
 
     @GetMapping
     public ResponseEntity<ApiResponseDto<?>> getActiveCompanies(
@@ -37,22 +61,50 @@ public class CompanyQueryController {
             HttpServletRequest request
     ) {
         try {
-            int pageNumber = (page != null && page >= 0) ? page : 0;
-            int pageSize = (size != null && size > 0) ? size : 20;
+            return getActiveCompaniesFormatted(page, size);
 
-            Pageable pageable = PageRequest.of(pageNumber, pageSize);
-
-            Result<Page<Company>, ? extends ApiResponseDescriptor> result =
-                    companyQueryPort.getActiveCompanies(pageable);
-
-            Result<Page<CompanyResponseDto>, ? extends ApiResponseDescriptor> mapped =
-                    mapResult(result, p -> p.map(companyResponseMapper::toDto));
-
-            return ApiResponseFactory.fromResult(mapped, SuccessApiResponse.READ, null);
         } catch (Exception ex) {
             log.error("Unhandled exception at CompanyQueryController.getActiveCompanies", ex);
             return ApiResponseFactory.unknownError(null);
         }
+    }
+
+    private ResponseEntity<ApiResponseDto<?>> getActiveCompaniesFormatted(Integer page, Integer size) {
+        Pageable pageable = resolvePageable(page, size, defaultPageSize, maxPageSize);
+
+        Result<Page<Company>, ? extends ApiResponseDescriptor> result =
+                companyQueryPort.getActiveCompanies(pageable);
+
+        if (result == null) {
+            return ApiResponseFactory.unknownError(null);
+        }
+
+        if (!result.isSuccess()) {
+            return ApiResponseFactory.fromResult(Result.error(result.error()),
+                    SuccessApiResponse.READ, null);
+        }
+
+        Page<Company> companiesPage = result.value();
+
+        List<CompanyResponseDto> data = companyResponseMapper.toDtoPageContent(companiesPage);
+        PaginationDto pagination = PaginationDto.from(companiesPage);
+
+        ApiResponseDto<List<CompanyResponseDto>> body =
+                ApiResponseDto.ok(SuccessApiResponse.READ, data, pagination, null);
+
+        return ResponseEntity.status(SuccessApiResponse.READ.getStatusCode()).body(body);
+    }
+
+    private static Pageable resolvePageable(Integer page, Integer size, int defaultPageSize, int maxPageSize) {
+        int safeDefaultPageSize = defaultPageSize > 0 ? defaultPageSize : 10;
+        int safeMaxPageSize = maxPageSize > 0 ? maxPageSize : 100;
+
+        int pageNumber = (page != null && page >= 0) ? page : 0;
+
+        int rawSize = (size != null && size > 0) ? size : safeDefaultPageSize;
+        int pageSize = Math.min(rawSize, safeMaxPageSize);
+
+        return PageRequest.of(pageNumber, pageSize);
     }
 
     private static <T, R> Result<R, ? extends ApiResponseDescriptor> mapResult(
