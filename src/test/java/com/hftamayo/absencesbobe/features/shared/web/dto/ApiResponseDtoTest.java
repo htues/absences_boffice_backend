@@ -4,6 +4,7 @@ import com.hftamayo.absencesbobe.shared.web.constants.ApiResponseDescriptor;
 import com.hftamayo.absencesbobe.shared.web.constants.ErrorApiResponse;
 import com.hftamayo.absencesbobe.shared.web.constants.SuccessApiResponse;
 import com.hftamayo.absencesbobe.shared.web.dto.ApiResponseDto;
+import com.hftamayo.absencesbobe.shared.web.dto.PaginationDto;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -28,6 +29,7 @@ class ApiResponseDtoTest {
         assertEquals(200, dto.getStatusCode());
         assertEquals("ENTITY_RETRIEVED", dto.getResultMessage());
         assertEquals("payload", dto.getData());
+        assertNull(dto.getPagination());
         assertEquals(10L, dto.getCacheTTL());
 
         assertNotNull(dto.getTimestamp());
@@ -43,6 +45,29 @@ class ApiResponseDtoTest {
         assertEquals(SuccessApiResponse.READ.getStatusCode(), dto.getStatusCode());
         assertEquals(SuccessApiResponse.READ.getMessageKey(), dto.getResultMessage());
         assertEquals("hello", dto.getData());
+        assertNull(dto.getPagination());
+        assertNull(dto.getCacheTTL());
+        assertNotNull(dto.getTimestamp());
+    }
+
+    @Test
+    void ok_withPagination_buildsSuccessDto_andSetsPagination() {
+        PaginationDto pagination = PaginationDto.builder()
+                .pageIndex(0)
+                .pageSize(10)
+                .totalCount(4)
+                .totalPages(1)
+                .hasNext(false)
+                .hasPrev(false)
+                .build();
+
+        ApiResponseDto<String> dto = ApiResponseDto.ok(SuccessApiResponse.READ, "hello", pagination, null);
+
+        assertEquals(SuccessApiResponse.READ.getResponseType(), dto.getResponseType());
+        assertEquals(SuccessApiResponse.READ.getStatusCode(), dto.getStatusCode());
+        assertEquals(SuccessApiResponse.READ.getMessageKey(), dto.getResultMessage());
+        assertEquals("hello", dto.getData());
+        assertSame(pagination, dto.getPagination());
         assertNull(dto.getCacheTTL());
         assertNotNull(dto.getTimestamp());
     }
@@ -55,6 +80,7 @@ class ApiResponseDtoTest {
         assertEquals(ErrorApiResponse.NOT_FOUND.getStatusCode(), dto.getStatusCode());
         assertEquals(ErrorApiResponse.NOT_FOUND.getMessageKey(), dto.getResultMessage());
         assertNull(dto.getData());
+        assertNull(dto.getPagination());
         assertEquals(5L, dto.getCacheTTL());
         assertNotNull(dto.getTimestamp());
     }

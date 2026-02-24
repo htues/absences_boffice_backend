@@ -32,17 +32,14 @@ class CompanyQueryControllerTest {
 
         HttpServletRequest request = mock(HttpServletRequest.class);
 
-        Company c1 = mock(Company.class);
-        Company c2 = mock(Company.class);
-        Page<Company> page = new PageImpl<>(List.of(c1, c2));
+        Page<Company> page = new PageImpl<>(List.of(mock(Company.class), mock(Company.class)));
 
         when(port.getActiveCompanies(any(Pageable.class)))
                 .thenReturn(Result.ok(page));
 
         CompanyResponseDto dto1 = new CompanyResponseDto();
         CompanyResponseDto dto2 = new CompanyResponseDto();
-        when(mapper.toDto(c1)).thenReturn(dto1);
-        when(mapper.toDto(c2)).thenReturn(dto2);
+        when(mapper.toDtoPageContent(page)).thenReturn(List.of(dto1, dto2));
 
         ResponseEntity<ApiResponseDto<?>> response = controller.getActiveCompanies(null, null, request);
 
@@ -56,15 +53,18 @@ class CompanyQueryControllerTest {
 
         Object data = api.getData();
         assertNotNull(data);
-        assertTrue(data instanceof Page<?>);
+        assertTrue(data instanceof List<?>);
 
         @SuppressWarnings("unchecked")
-        Page<CompanyResponseDto> dtoPage = (Page<CompanyResponseDto>) data;
-        assertEquals(List.of(dto1, dto2), dtoPage.getContent());
+        List<CompanyResponseDto> dtos = (List<CompanyResponseDto>) data;
+        assertEquals(List.of(dto1, dto2), dtos);
 
-        verify(port).getActiveCompanies(argThat(p -> p.getPageNumber() == 0 && p.getPageSize() == 20));
-        verify(mapper).toDto(c1);
-        verify(mapper).toDto(c2);
+        assertNotNull(api.getPagination());
+        assertEquals(0, api.getPagination().getPageIndex());
+        assertEquals(2, api.getPagination().getPageSize());
+
+        verify(port).getActiveCompanies(argThat(p -> p.getPageNumber() == 0 && p.getPageSize() == 10));
+        verify(mapper).toDtoPageContent(page);
         verifyNoMoreInteractions(port, mapper);
     }
 
@@ -76,8 +76,11 @@ class CompanyQueryControllerTest {
 
         HttpServletRequest request = mock(HttpServletRequest.class);
 
+        Page<Company> empty = Page.empty();
+
         when(port.getActiveCompanies(any(Pageable.class)))
-                .thenReturn(Result.ok(Page.empty()));
+                .thenReturn(Result.ok(empty));
+        when(mapper.toDtoPageContent(empty)).thenReturn(List.of());
 
         ResponseEntity<ApiResponseDto<?>> response = controller.getActiveCompanies(1, 5, request);
 
@@ -85,8 +88,56 @@ class CompanyQueryControllerTest {
         assertNotNull(response.getBody());
 
         verify(port).getActiveCompanies(argThat(p -> p.getPageNumber() == 1 && p.getPageSize() == 5));
-        verifyNoInteractions(mapper);
-        verifyNoMoreInteractions(port);
+        verify(mapper).toDtoPageContent(empty);
+        verifyNoMoreInteractions(port, mapper);
+    }
+
+    @Test
+    void getActiveCompanies_success_capsSizeToMax_whenTooLarge() {
+        CompanyQueryPort port = mock(CompanyQueryPort.class);
+        CompanyResponseMapper mapper = mock(CompanyResponseMapper.class);
+        CompanyQueryController controller = new CompanyQueryController(port, mapper);
+
+        HttpServletRequest request = mock(HttpServletRequest.class);
+
+        Page<Company> empty = Page.empty();
+
+        when(port.getActiveCompanies(any(Pageable.class)))
+                .thenReturn(Result.ok(empty));
+        when(mapper.toDtoPageContent(empty)).thenReturn(List.of());
+
+        ResponseEntity<ApiResponseDto<?>> response = controller.getActiveCompanies(0, 9999, request);
+
+        assertEquals(SuccessApiResponse.READ.getStatusCode(), response.getStatusCode().value());
+        assertNotNull(response.getBody());
+
+        verify(port).getActiveCompanies(argThat(p -> p.getPageNumber() == 0 && p.getPageSize() == 100));
+        verify(mapper).toDtoPageContent(empty);
+        verifyNoMoreInteractions(port, mapper);
+    }
+
+    @Test
+    void getActiveCompanies_success_normalizesNegativePageToZero_andInvalidSizeToDefault() {
+        CompanyQueryPort port = mock(CompanyQueryPort.class);
+        CompanyResponseMapper mapper = mock(CompanyResponseMapper.class);
+        CompanyQueryController controller = new CompanyQueryController(port, mapper);
+
+        HttpServletRequest request = mock(HttpServletRequest.class);
+
+        Page<Company> empty = Page.empty();
+
+        when(port.getActiveCompanies(any(Pageable.class)))
+                .thenReturn(Result.ok(empty));
+        when(mapper.toDtoPageContent(empty)).thenReturn(List.of());
+
+        ResponseEntity<ApiResponseDto<?>> response = controller.getActiveCompanies(-1, 0, request);
+
+        assertEquals(SuccessApiResponse.READ.getStatusCode(), response.getStatusCode().value());
+        assertNotNull(response.getBody());
+
+        verify(port).getActiveCompanies(argThat(p -> p.getPageNumber() == 0 && p.getPageSize() == 10));
+        verify(mapper).toDtoPageContent(empty);
+        verifyNoMoreInteractions(port, mapper);
     }
 
     @Test
@@ -108,6 +159,7 @@ class CompanyQueryControllerTest {
         assertEquals(ErrorApiResponse.UNKNOWN_ERROR.getStatusCode(), response.getBody().getStatusCode());
         assertEquals(ErrorApiResponse.UNKNOWN_ERROR.getMessageKey(), response.getBody().getResultMessage());
         assertNull(response.getBody().getData());
+        assertNull(response.getBody().getPagination());
 
         verify(port).getActiveCompanies(any(Pageable.class));
         verifyNoInteractions(mapper);
