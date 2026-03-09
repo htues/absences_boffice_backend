@@ -1,6 +1,5 @@
-package com.hftamayo.absencesbobe.features.companies.adaperts.web.command;
+package com.hftamayo.absencesbobe.features.companies.adapters.web.command;
 
-import com.hftamayo.absencesbobe.features.companies.adapters.web.command.CompanyCommandController;
 import com.hftamayo.absencesbobe.features.companies.adapters.web.dto.CompanyResponseDto;
 import com.hftamayo.absencesbobe.features.companies.adapters.web.dto.CreateCompanyRequest;
 import com.hftamayo.absencesbobe.features.companies.adapters.web.mapper.CompanyResponseMapper;

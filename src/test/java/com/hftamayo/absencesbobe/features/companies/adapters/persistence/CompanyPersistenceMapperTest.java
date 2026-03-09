@@ -1,7 +1,5 @@
-package com.hftamayo.absencesbobe.features.companies.adaperts.persistence;
+package com.hftamayo.absencesbobe.features.companies.adapters.persistence;
 
-import com.hftamayo.absencesbobe.features.companies.adapters.persistence.CompanyJpaEntity;
-import com.hftamayo.absencesbobe.features.companies.adapters.persistence.CompanyPersistenceMapper;
 import com.hftamayo.absencesbobe.features.companies.domain.Company;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

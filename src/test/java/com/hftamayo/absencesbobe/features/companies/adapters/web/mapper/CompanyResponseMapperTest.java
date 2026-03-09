@@ -1,7 +1,6 @@
-package com.hftamayo.absencesbobe.features.companies.adaperts.web.mapper;
+package com.hftamayo.absencesbobe.features.companies.adapters.web.mapper;
 
 import com.hftamayo.absencesbobe.features.companies.adapters.web.dto.CompanyResponseDto;
-import com.hftamayo.absencesbobe.features.companies.adapters.web.mapper.CompanyResponseMapper;
 import com.hftamayo.absencesbobe.features.companies.domain.Company;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
