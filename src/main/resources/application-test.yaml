@@ -45,8 +45,10 @@ seed:
 
 test:
   user:
-    email: test@example.com
+    name: ${TEST_USER_NAME:test_user}
     password: ${TEST_USER_PASSWORD:test_password}
+  db:
+    name: ${TEST_DB_NAME:test_db}
 
 app:
   environment: test
