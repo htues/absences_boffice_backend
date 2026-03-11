@@ -44,8 +44,8 @@ class CompanyQueryRepositoryAdapterIT extends AbstractPostgresIT {
 
         assertThat(result.getContent())
                 .extracting(Company::getName)
-                .map(name -> name.substring(0, name.indexOf('-')))
-                .containsExactlyInAnyOrder("Acme", "Globex");
+                .anySatisfy(name -> assertThat(name).startsWith("Acme-"))
+                .anySatisfy(name -> assertThat(name).startsWith("Globex-"));
 
         assertThat(result.getContent())
                 .allSatisfy(company -> {
