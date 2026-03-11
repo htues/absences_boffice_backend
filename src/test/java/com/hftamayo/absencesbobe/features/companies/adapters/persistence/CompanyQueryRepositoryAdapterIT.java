@@ -86,21 +86,22 @@ class CompanyQueryRepositoryAdapterIT extends AbstractPostgresIT {
 
         assertThat(result.getContent()).hasSizeGreaterThanOrEqualTo(1);
 
-        Company company = result.getContent().getFirst();
-
-        assertThat(company.getId()).isEqualTo(savedEntity.getId());
-        assertThat(company.getName()).startsWith("Acme");
-        assertThat(company.getDescription()).isEqualTo("Description for Acme");
-        assertThat(company.getAddress()).isEqualTo("Address for Acme");
-        assertThat(company.isActive()).isTrue();
-        assertThat(company.isDeleted()).isFalse();
-        assertThat(company.getCreatedBy()).isEqualTo(0L);
-        assertThat(company.getCreatedDate()).isNotNull();
+        assertThat(result.getContent())
+                .anySatisfy(company -> {
+                    assertThat(company.getId()).isEqualTo(savedEntity.getId());
+                    assertThat(company.getName()).startsWith("Acme-");
+                    assertThat(company.getDescription()).isEqualTo("Description for Acme");
+                    assertThat(company.getAddress()).isEqualTo("Address for Acme");
+                    assertThat(company.isActive()).isTrue();
+                    assertThat(company.isDeleted()).isFalse();
+                    assertThat(company.getCreatedBy()).isEqualTo(0L);
+                    assertThat(company.getCreatedDate()).isNotNull();
+                });
     }
 
     private CompanyJpaEntity companyEntity(String name, boolean active, boolean deleted) {
         CompanyJpaEntity entity = new CompanyJpaEntity();
-        String targetName = name + "-" + UUID.randomUUID();
+        String targetName = name + "-" + UUID.randomUUID().toString().substring(0, 8);
         entity.setName(targetName);
         entity.setDescription("Description for " + name);
         entity.setAddress("Address for " + name);
