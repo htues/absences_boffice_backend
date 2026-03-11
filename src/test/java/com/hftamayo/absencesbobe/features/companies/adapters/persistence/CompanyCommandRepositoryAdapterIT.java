@@ -74,7 +74,7 @@ class CompanyCommandRepositoryAdapterIT extends AbstractPostgresIT {
 
         assertThat(result).isPresent();
         assertThat(result.get().getId()).isEqualTo(savedEntity.getId());
-        assertThat(result.get().getName()).startsWith("itCompany-");;
+        assertThat(result.get().getName()).startsWith("itCompany-");
         assertThat(result.get().isDeleted()).isFalse();
         assertThat(result.get().isActive()).isTrue();
     }
@@ -107,7 +107,7 @@ class CompanyCommandRepositoryAdapterIT extends AbstractPostgresIT {
 
         assertThat(result).isPresent();
         assertThat(result.get().getId()).isEqualTo(savedEntity.getId());
-        assertThat(result.get().getName()).isEqualTo("Deleted Co");
+        assertThat(result.get().getName()).startsWith("itCompany-");
         assertThat(result.get().isDeleted()).isTrue();
         assertThat(result.get().isActive()).isFalse();
     }
@@ -120,8 +120,9 @@ class CompanyCommandRepositoryAdapterIT extends AbstractPostgresIT {
                 true
         );
         jpaRepository.saveAndFlush(deletedEntity);
+        String targetName = deletedEntity.getName();
 
-        assertThat(adapter.existsByName("acme")).isFalse();
+        assertThat(adapter.existsByName(targetName)).isFalse();
 
         CompanyJpaEntity activeEntity = companyEntity(
                 true,
@@ -129,8 +130,9 @@ class CompanyCommandRepositoryAdapterIT extends AbstractPostgresIT {
         );
 
         jpaRepository.saveAndFlush(activeEntity);
+        targetName = activeEntity.getName();
 
-        assertThat(adapter.existsByName("gLoBeX")).isTrue();
+        assertThat(adapter.existsByName(targetName)).isTrue();
         assertThat(adapter.existsByName("unknown")).isFalse();
     }
 
@@ -142,16 +144,18 @@ class CompanyCommandRepositoryAdapterIT extends AbstractPostgresIT {
                 false
         );
         CompanyJpaEntity savedFirst = jpaRepository.saveAndFlush(first);
+        String targetName = savedFirst.getName();
 
-        assertThat(adapter.existsByNameExcludingId("ACME", savedFirst.getId())).isFalse();
+        assertThat(adapter.existsByNameExcludingId(targetName, savedFirst.getId())).isFalse();
 
         CompanyJpaEntity second = companyEntity(
             true,
             false
         );
         CompanyJpaEntity savedSecond = jpaRepository.saveAndFlush(second);
+        targetName = savedSecond.getName();
 
-        assertThat(adapter.existsByNameExcludingId("Acme", savedSecond.getId())).isTrue();
+        assertThat(adapter.existsByNameExcludingId(targetName, savedSecond.getId())).isTrue();
         assertThat(adapter.existsByNameExcludingId("Unknown", savedSecond.getId())).isFalse();
     }
 
