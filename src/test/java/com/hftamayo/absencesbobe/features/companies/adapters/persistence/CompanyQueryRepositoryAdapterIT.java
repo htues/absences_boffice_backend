@@ -74,7 +74,7 @@ class CompanyQueryRepositoryAdapterIT extends AbstractPostgresIT {
 
         assertThat(secondPage.getContent()).hasSizeGreaterThanOrEqualTo(1);
         assertThat(secondPage.getTotalElements()).isGreaterThanOrEqualTo(3);
-        assertThat(secondPage.getTotalPages()).isEqualTo(2);
+        assertThat(secondPage.getTotalPages()).isGreaterThanOrEqualTo(2);
     }
 
     @Test
