@@ -153,7 +153,6 @@ class CompanyCommandRepositoryAdapterIT extends AbstractPostgresIT {
             false
         );
         CompanyJpaEntity savedSecond = jpaRepository.saveAndFlush(second);
-        targetName = savedSecond.getName();
 
         assertThat(adapter.existsByNameExcludingId(savedFirst.getName(), savedSecond.getId())).isTrue();
         assertThat(adapter.existsByNameExcludingId("Unknown", savedSecond.getId())).isFalse();
