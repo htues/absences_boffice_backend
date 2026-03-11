@@ -44,6 +44,7 @@ class CompanyQueryRepositoryAdapterIT extends AbstractPostgresIT {
 
         assertThat(result.getContent())
                 .extracting(Company::getName)
+                .map(name -> name.substring(0, name.indexOf('-')))
                 .containsExactlyInAnyOrder("Acme", "Globex");
 
         assertThat(result.getContent())
@@ -88,7 +89,7 @@ class CompanyQueryRepositoryAdapterIT extends AbstractPostgresIT {
         Company company = result.getContent().getFirst();
 
         assertThat(company.getId()).isEqualTo(savedEntity.getId());
-        assertThat(company.getName()).isEqualTo("Acme");
+        assertThat(company.getName()).startsWith("Acme");
         assertThat(company.getDescription()).isEqualTo("Description for Acme");
         assertThat(company.getAddress()).isEqualTo("Address for Acme");
         assertThat(company.isActive()).isTrue();
@@ -99,7 +100,7 @@ class CompanyQueryRepositoryAdapterIT extends AbstractPostgresIT {
 
     private CompanyJpaEntity companyEntity(String name, boolean active, boolean deleted) {
         CompanyJpaEntity entity = new CompanyJpaEntity();
-        String targetName = name + UUID.randomUUID();
+        String targetName = name + "-" + UUID.randomUUID();
         entity.setName(targetName);
         entity.setDescription("Description for " + name);
         entity.setAddress("Address for " + name);
