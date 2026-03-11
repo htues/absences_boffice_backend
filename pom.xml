@@ -34,6 +34,7 @@
 		<skip.coverage.check>false</skip.coverage.check>
 
 		<testcontainers.version>1.20.4</testcontainers.version>
+		<argLine></argLine>
 	</properties>
 	<dependencies>
 		<!-- Web/API -->
