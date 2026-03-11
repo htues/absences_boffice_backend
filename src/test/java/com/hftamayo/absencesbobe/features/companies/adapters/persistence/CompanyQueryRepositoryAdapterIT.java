@@ -12,6 +12,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
@@ -97,7 +99,8 @@ class CompanyQueryRepositoryAdapterIT extends AbstractPostgresIT {
 
     private CompanyJpaEntity companyEntity(String name, boolean active, boolean deleted) {
         CompanyJpaEntity entity = new CompanyJpaEntity();
-        entity.setName(name);
+        String targetName = name + UUID.randomUUID();
+        entity.setName(targetName);
         entity.setDescription("Description for " + name);
         entity.setAddress("Address for " + name);
         entity.setActive(active);
