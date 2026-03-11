@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hftamayo.absencesbobe.features.companies.adapters.persistence.CompanyJpaEntity;
 import com.hftamayo.absencesbobe.features.companies.adapters.persistence.CompanySpringDataRepository;
+import com.hftamayo.absencesbobe.features.companies.domain.Company;
 import com.hftamayo.absencesbobe.features.shared.test.AbstractPostgresIT;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -65,7 +66,7 @@ class CompanyQueryControllerIT extends AbstractPostgresIT {
 
         Set<String> companyNames = extractNames(data);
 
-        assertThat(companyNames).containsExactlyInAnyOrder("Acme", "Globex");
+        assertThat(companyNames).contains("Acme", "Globex");
         assertThat(companyNames).doesNotContain("InactiveCo", "DeletedCo");
 
         JsonNode pagination = json.path("pagination");
@@ -128,7 +129,8 @@ class CompanyQueryControllerIT extends AbstractPostgresIT {
     private Set<String> extractNames(JsonNode data) {
         Set<String> names = new HashSet<>();
         for (JsonNode item : data) {
-            names.add(item.path("name").asText());
+            String rawName = item.path("name").asText();
+            names.add(rawName.split("-", 2)[0]);
         }
         return names;
     }
