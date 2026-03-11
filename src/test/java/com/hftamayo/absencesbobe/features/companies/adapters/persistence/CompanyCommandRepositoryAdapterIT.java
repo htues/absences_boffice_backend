@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -32,8 +33,9 @@ class CompanyCommandRepositoryAdapterIT extends AbstractPostgresIT {
     @Test
     @DisplayName("save persists company and returns mapped domain object")
     void save_persistsCompanyCorrectly() {
+        String uniqueName = "itCompany-" + UUID.randomUUID();
         Company company = Company.createNew(
-                "Acme",
+                uniqueName,
                 "Technology company",
                 "123 Main Street"
         );
@@ -41,7 +43,7 @@ class CompanyCommandRepositoryAdapterIT extends AbstractPostgresIT {
         Company saved = adapter.save(company);
 
         assertThat(saved.getId()).isNotNull();
-        assertThat(saved.getName()).isEqualTo("Acme");
+        assertThat(saved.getName()).startsWith("itCompany-");
         assertThat(saved.getDescription()).isEqualTo("Technology company");
         assertThat(saved.getAddress()).isEqualTo("123 Main Street");
         assertThat(saved.isActive()).isTrue();
@@ -49,7 +51,7 @@ class CompanyCommandRepositoryAdapterIT extends AbstractPostgresIT {
 
         CompanyJpaEntity persisted = jpaRepository.findById(saved.getId()).orElseThrow();
 
-        assertThat(persisted.getName()).isEqualTo("Acme");
+        assertThat(persisted.getName()).startsWith("itCompany-");
         assertThat(persisted.getDescription()).isEqualTo("Technology company");
         assertThat(persisted.getAddress()).isEqualTo("123 Main Street");
         assertThat(persisted.isActive()).isTrue();
@@ -62,9 +64,6 @@ class CompanyCommandRepositoryAdapterIT extends AbstractPostgresIT {
     @DisplayName("findById returns company when row is not deleted")
     void findById_returnsCompany_whenNotDeleted() {
         CompanyJpaEntity entity = companyEntity(
-                "Acme",
-                "Technology company",
-                "123 Main Street",
                 true,
                 false
         );
@@ -75,7 +74,7 @@ class CompanyCommandRepositoryAdapterIT extends AbstractPostgresIT {
 
         assertThat(result).isPresent();
         assertThat(result.get().getId()).isEqualTo(savedEntity.getId());
-        assertThat(result.get().getName()).isEqualTo("Acme");
+        assertThat(result.get().getName()).startsWith("itCompany-");;
         assertThat(result.get().isDeleted()).isFalse();
         assertThat(result.get().isActive()).isTrue();
     }
@@ -84,9 +83,6 @@ class CompanyCommandRepositoryAdapterIT extends AbstractPostgresIT {
     @DisplayName("findById returns empty when row is deleted")
     void findById_returnsEmpty_whenDeleted() {
         CompanyJpaEntity entity = companyEntity(
-                "Deleted Co",
-                "Soft deleted company",
-                "456 Sunset Blvd",
                 false,
                 true
         );
@@ -102,9 +98,6 @@ class CompanyCommandRepositoryAdapterIT extends AbstractPostgresIT {
     @DisplayName("findByIdIncludingDeleted returns company even when row is deleted")
     void findByIdIncludingDeleted_returnsDeletedCompany() {
         CompanyJpaEntity entity = companyEntity(
-                "Deleted Co",
-                "Soft deleted company",
-                "456 Sunset Blvd",
                 false,
                 true
         );
@@ -123,9 +116,6 @@ class CompanyCommandRepositoryAdapterIT extends AbstractPostgresIT {
     @DisplayName("existsByName is case-insensitive and ignores deleted rows")
     void existsByName_isCaseInsensitive_andIgnoresDeletedRows() {
         CompanyJpaEntity deletedEntity = companyEntity(
-                "Acme",
-                "Deleted company",
-                "Old address",
                 false,
                 true
         );
@@ -134,9 +124,6 @@ class CompanyCommandRepositoryAdapterIT extends AbstractPostgresIT {
         assertThat(adapter.existsByName("acme")).isFalse();
 
         CompanyJpaEntity activeEntity = companyEntity(
-                "Globex",
-                "Active company",
-                "New address",
                 true,
                 false
         );
@@ -151,9 +138,6 @@ class CompanyCommandRepositoryAdapterIT extends AbstractPostgresIT {
     @DisplayName("existsByNameExcludingId returns false for same row and true for another row with same name")
     void existsByNameExcludingId_behavesCorrectlyForUpdates() {
         CompanyJpaEntity first = companyEntity(
-                "Acme",
-                "First company",
-                "Address 1",
                 true,
                 false
         );
@@ -162,9 +146,6 @@ class CompanyCommandRepositoryAdapterIT extends AbstractPostgresIT {
         assertThat(adapter.existsByNameExcludingId("ACME", savedFirst.getId())).isFalse();
 
         CompanyJpaEntity second = companyEntity(
-            "Initech",
-            "Second company",
-            "Address 2",
             true,
             false
         );
@@ -175,14 +156,14 @@ class CompanyCommandRepositoryAdapterIT extends AbstractPostgresIT {
     }
 
     private CompanyJpaEntity companyEntity(
-            String name,
-            String description,
-            String address,
             boolean active,
             boolean deleted
     ) {
+        String uniqueName = "itCompany-" + UUID.randomUUID();
+        String description = "Technology company";
+        String address = "123 Main Street";
         CompanyJpaEntity entity = new CompanyJpaEntity();
-        entity.setName(name);
+        entity.setName(uniqueName);
         entity.setDescription(description);
         entity.setAddress(address);
         entity.setActive(active);
