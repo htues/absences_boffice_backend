@@ -1,8 +1,7 @@
-package com.hftamayo.absencesbobe.features.companies.adaperts.web.query;
+package com.hftamayo.absencesbobe.features.companies.adapters.web.query;
 
 import com.hftamayo.absencesbobe.features.companies.adapters.web.dto.CompanyResponseDto;
 import com.hftamayo.absencesbobe.features.companies.adapters.web.mapper.CompanyResponseMapper;
-import com.hftamayo.absencesbobe.features.companies.adapters.web.query.CompanyQueryController;
 import com.hftamayo.absencesbobe.features.companies.application.ports.in.CompanyQueryPort;
 import com.hftamayo.absencesbobe.features.companies.domain.Company;
 import com.hftamayo.absencesbobe.shared.application.result.Result;

@@ -1,4 +1,13 @@
 spring:
+  datasource:
+    hikari:
+      minimum-idle: 1
+      maximum-pool-size: 4
+      connection-timeout: 30000
+      idle-timeout: 10000
+      max-lifetime: 30000
+      validation-timeout: 5000
+
   config:
     activate:
       on-profile: test
@@ -9,6 +18,10 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+
+  test:
+    database:
+      replace: none
 
 logging:
   level:
@@ -41,8 +54,10 @@ seed:
 
 test:
   user:
-    email: test@example.com
+    name: ${TEST_USER_NAME:test_user}
     password: ${TEST_USER_PASSWORD:test_password}
+  db:
+    name: ${TEST_DB_NAME:test_db}
 
 app:
   environment: test
