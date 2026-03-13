@@ -90,6 +90,19 @@ class CompanyCommandServiceTest {
         verify(companyRepository).save(newCompany);
     }
 
+    @Test
+    void createCompany_unexpectedException_mapsToUnknownError() {
+        Company newCompany = Company.createNew("Acme", "Some description", "Some address");
+        when(companyRepository.existsByName("Acme")).thenThrow(new RuntimeException("boom"));
+
+        Result<Company, ? extends ApiResponseDescriptor> result = service.createCompany(newCompany);
+
+        assertTrue(result.isError());
+        assertEquals(ErrorApiResponse.UNKNOWN_ERROR, result.error());
+        verify(companyRepository).existsByName("Acme");
+        verify(companyRepository, never()).save(any());
+    }
+
     // -------- updateCompany --------
 
     @Test
@@ -170,6 +183,85 @@ class CompanyCommandServiceTest {
         verify(companyRepository, never()).save(any());
     }
 
+        @Test
+        void updateCompany_nullId_returnsValidationError_andDoesNotTouchRepository() {
+        Result<Company, ? extends ApiResponseDescriptor> result =
+            service.updateCompany(null, "Name", "Desc", "Addr");
+
+        assertTrue(result.isError());
+        assertEquals(ErrorApiResponse.VALIDATION_ERROR, result.error());
+        verifyNoInteractions(companyRepository);
+        }
+
+        @Test
+        void updateCompany_nameChanged_toUniqueName_savesAndReturnsOk() {
+        Company existing = Company.rehydrate(
+            10L, "OldName", "OldDesc", "OldAddr",
+            true, false, null
+        );
+        when(companyRepository.findById(10L)).thenReturn(Optional.of(existing));
+        when(companyRepository.existsByNameExcludingId("NewName", 10L)).thenReturn(false);
+        when(companyRepository.save(any(Company.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Result<Company, ? extends ApiResponseDescriptor> result =
+            service.updateCompany(10L, "NewName", "NewDesc", "NewAddr");
+
+        assertTrue(result.isSuccess());
+        assertEquals("NewName", result.value().getName());
+        verify(companyRepository).existsByNameExcludingId("NewName", 10L);
+        verify(companyRepository).save(existing);
+        }
+
+    @Test
+    void updateCompany_whenOldNameIsNull_andNewNameProvided_checksUniqueness_andSaves() {
+        Company existing = mock(Company.class);
+        when(existing.getName()).thenReturn(null, "NewName");
+        when(existing.getId()).thenReturn(10L);
+
+        when(companyRepository.findById(10L)).thenReturn(Optional.of(existing));
+        when(companyRepository.existsByNameExcludingId("NewName", 10L)).thenReturn(false);
+        when(companyRepository.save(existing)).thenReturn(existing);
+
+        Result<Company, ? extends ApiResponseDescriptor> result =
+                service.updateCompany(10L, "NewName", "NewDesc", "NewAddr");
+
+        assertTrue(result.isSuccess());
+        assertSame(existing, result.value());
+        verify(existing).updateDetails("NewName", "NewDesc", "NewAddr");
+        verify(companyRepository).existsByNameExcludingId("NewName", 10L);
+        verify(companyRepository).save(existing);
+    }
+
+        @Test
+        void updateCompany_dataIntegrityViolation_mapsToEntityExists() {
+        Company existing = Company.rehydrate(
+            10L, "Acme", "OldDesc", "OldAddr",
+            true, false, null
+        );
+        when(companyRepository.findById(10L)).thenReturn(Optional.of(existing));
+        when(companyRepository.save(any(Company.class))).thenThrow(new DataIntegrityViolationException("dup"));
+
+        Result<Company, ? extends ApiResponseDescriptor> result =
+            service.updateCompany(10L, "acme", "NewDesc", "NewAddr");
+
+        assertTrue(result.isError());
+        assertEquals(ErrorApiResponse.ENTITY_EXISTS, result.error());
+        verify(companyRepository).save(existing);
+        }
+
+        @Test
+        void updateCompany_unexpectedException_mapsToUnknownError() {
+        when(companyRepository.findById(10L)).thenThrow(new RuntimeException("boom"));
+
+        Result<Company, ? extends ApiResponseDescriptor> result =
+            service.updateCompany(10L, "Name", "Desc", "Addr");
+
+        assertTrue(result.isError());
+        assertEquals(ErrorApiResponse.UNKNOWN_ERROR, result.error());
+        verify(companyRepository).findById(10L);
+        verify(companyRepository, never()).save(any());
+        }
+
     // -------- deleteCompany --------
 
     @Test
@@ -215,6 +307,27 @@ class CompanyCommandServiceTest {
         verify(companyRepository).save(existing);
     }
 
+    @Test
+    void deleteCompany_invalidId_returnsValidationError_andDoesNotTouchRepository() {
+        Result<Company, ? extends ApiResponseDescriptor> result = service.deleteCompany(0L);
+
+        assertTrue(result.isError());
+        assertEquals(ErrorApiResponse.VALIDATION_ERROR, result.error());
+        verifyNoInteractions(companyRepository);
+    }
+
+    @Test
+    void deleteCompany_unexpectedException_mapsToUnknownError() {
+        when(companyRepository.findByIdIncludingDeleted(10L)).thenThrow(new RuntimeException("boom"));
+
+        Result<Company, ? extends ApiResponseDescriptor> result = service.deleteCompany(10L);
+
+        assertTrue(result.isError());
+        assertEquals(ErrorApiResponse.UNKNOWN_ERROR, result.error());
+        verify(companyRepository).findByIdIncludingDeleted(10L);
+        verify(companyRepository, never()).save(any());
+    }
+
     // -------- restoreCompany --------
 
     @Test
@@ -249,6 +362,39 @@ class CompanyCommandServiceTest {
         verify(companyRepository).save(deleted);
     }
 
+    @Test
+    void restoreCompany_invalidId_returnsValidationError_andDoesNotTouchRepository() {
+        Result<Company, ? extends ApiResponseDescriptor> result = service.restoreCompany(0L);
+
+        assertTrue(result.isError());
+        assertEquals(ErrorApiResponse.VALIDATION_ERROR, result.error());
+        verifyNoInteractions(companyRepository);
+    }
+
+    @Test
+    void restoreCompany_notFound_returnsNotFound() {
+        when(companyRepository.findByIdIncludingDeleted(10L)).thenReturn(Optional.empty());
+
+        Result<Company, ? extends ApiResponseDescriptor> result = service.restoreCompany(10L);
+
+        assertTrue(result.isError());
+        assertEquals(ErrorApiResponse.NOT_FOUND, result.error());
+        verify(companyRepository).findByIdIncludingDeleted(10L);
+        verify(companyRepository, never()).save(any());
+    }
+
+    @Test
+    void restoreCompany_unexpectedException_mapsToUnknownError() {
+        when(companyRepository.findByIdIncludingDeleted(10L)).thenThrow(new RuntimeException("boom"));
+
+        Result<Company, ? extends ApiResponseDescriptor> result = service.restoreCompany(10L);
+
+        assertTrue(result.isError());
+        assertEquals(ErrorApiResponse.UNKNOWN_ERROR, result.error());
+        verify(companyRepository).findByIdIncludingDeleted(10L);
+        verify(companyRepository, never()).save(any());
+    }
+
     // -------- deactivateCompany / activateCompany --------
 
     @Test
@@ -263,6 +409,55 @@ class CompanyCommandServiceTest {
 
         assertTrue(result.isSuccess());
         assertSame(existing, result.value());
+        verify(companyRepository, never()).save(any());
+    }
+
+    @Test
+    void deactivateCompany_whenActive_deactivates_andSaves() {
+        Company existing = Company.rehydrate(
+                10L, "Acme", "Desc", "Addr",
+                true, false, null
+        );
+        when(companyRepository.findById(10L)).thenReturn(Optional.of(existing));
+        when(companyRepository.save(any(Company.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Result<Company, ? extends ApiResponseDescriptor> result = service.deactivateCompany(10L);
+
+        assertTrue(result.isSuccess());
+        assertFalse(result.value().isActive());
+        verify(companyRepository).save(existing);
+    }
+
+    @Test
+    void deactivateCompany_invalidId_returnsValidationError_andDoesNotTouchRepository() {
+        Result<Company, ? extends ApiResponseDescriptor> result = service.deactivateCompany(0L);
+
+        assertTrue(result.isError());
+        assertEquals(ErrorApiResponse.VALIDATION_ERROR, result.error());
+        verifyNoInteractions(companyRepository);
+    }
+
+    @Test
+    void deactivateCompany_notFound_returnsNotFound() {
+        when(companyRepository.findById(10L)).thenReturn(Optional.empty());
+
+        Result<Company, ? extends ApiResponseDescriptor> result = service.deactivateCompany(10L);
+
+        assertTrue(result.isError());
+        assertEquals(ErrorApiResponse.NOT_FOUND, result.error());
+        verify(companyRepository).findById(10L);
+        verify(companyRepository, never()).save(any());
+    }
+
+    @Test
+    void deactivateCompany_unexpectedException_mapsToUnknownError() {
+        when(companyRepository.findById(10L)).thenThrow(new RuntimeException("boom"));
+
+        Result<Company, ? extends ApiResponseDescriptor> result = service.deactivateCompany(10L);
+
+        assertTrue(result.isError());
+        assertEquals(ErrorApiResponse.UNKNOWN_ERROR, result.error());
+        verify(companyRepository).findById(10L);
         verify(companyRepository, never()).save(any());
     }
 
@@ -290,6 +485,42 @@ class CompanyCommandServiceTest {
 
         assertTrue(result.isError());
         assertEquals(ErrorApiResponse.NOT_FOUND, result.error());
+        verify(companyRepository, never()).save(any());
+    }
+
+    @Test
+    void activateCompany_whenAlreadyActive_isIdempotent_returnsOkWithoutSaving() {
+        Company existing = Company.rehydrate(
+                10L, "Acme", "Desc", "Addr",
+                true, false, null
+        );
+        when(companyRepository.findById(10L)).thenReturn(Optional.of(existing));
+
+        Result<Company, ? extends ApiResponseDescriptor> result = service.activateCompany(10L);
+
+        assertTrue(result.isSuccess());
+        assertSame(existing, result.value());
+        verify(companyRepository, never()).save(any());
+    }
+
+    @Test
+    void activateCompany_invalidId_returnsValidationError_andDoesNotTouchRepository() {
+        Result<Company, ? extends ApiResponseDescriptor> result = service.activateCompany(0L);
+
+        assertTrue(result.isError());
+        assertEquals(ErrorApiResponse.VALIDATION_ERROR, result.error());
+        verifyNoInteractions(companyRepository);
+    }
+
+    @Test
+    void activateCompany_unexpectedException_mapsToUnknownError() {
+        when(companyRepository.findById(10L)).thenThrow(new RuntimeException("boom"));
+
+        Result<Company, ? extends ApiResponseDescriptor> result = service.activateCompany(10L);
+
+        assertTrue(result.isError());
+        assertEquals(ErrorApiResponse.UNKNOWN_ERROR, result.error());
+        verify(companyRepository).findById(10L);
         verify(companyRepository, never()).save(any());
     }
 }
