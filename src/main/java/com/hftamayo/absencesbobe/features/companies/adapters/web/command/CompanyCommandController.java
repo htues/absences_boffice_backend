@@ -17,6 +17,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,6 +26,7 @@ import java.util.function.Supplier;
 
 @AllArgsConstructor
 @Slf4j
+@Validated
 @RestController
 @RequestMapping("/api/${version.api.current}/companies")
 public class CompanyCommandController {
@@ -45,7 +47,7 @@ public class CompanyCommandController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponseDto<?>> updateCompany(
-            @PathVariable Long id,
+            @PathVariable @Positive Long id,
             @RequestBody @Valid UpdateCompanyRequest body,
             HttpServletRequest request
     ) {
@@ -61,7 +63,7 @@ public class CompanyCommandController {
 
     @PutMapping("/{id}/deactivate")
     public ResponseEntity<ApiResponseDto<?>> deactivateCompany(
-            @PathVariable Long id,
+            @PathVariable @Positive Long id,
             HttpServletRequest request
     ) {
         return handle(
