@@ -1,11 +1,13 @@
 package com.hftamayo.absencesbobe.features.companies.adapters.web.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record UpdateCompanyRequest(
         @NotBlank
         @Size(min = 2, max = 50)
+        @Pattern(regexp = "^[A-Za-z0-9 .,&'-]+$", message = "name contains invalid characters")
         String name,
 
         @NotBlank
