@@ -30,6 +30,17 @@ spring:
     init:
       mode: never
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+
 logging:
   level:
     com.hftamayo.java.absencesbobe: INFO
