@@ -38,7 +38,7 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 # setup the timezone
-RUN apk add --no-cache tzdata && \
+RUN apk add --no-cache tzdata curl && \
     cp /usr/share/zoneinfo/America/Chicago /etc/localtime && \
     echo "America/Chicago" > /etc/timezone && \
     apk del tzdata
@@ -60,7 +60,7 @@ VOLUME ["/logs", "/resources"]
 
 # Habilitar health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
-  CMD wget -q --spider http://localhost:8080/actuator/health/readiness || exit 1
+  CMD curl -fsS http://localhost:8080/actuator/health/readiness || exit 1
 
 EXPOSE 8080
 
