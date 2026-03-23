@@ -4,9 +4,9 @@ spring:
       on-profile: prod
 
   datasource:
-    url: jdbc:postgresql://${DB_HOST:absencesdb}:${DB_PORT:5432}/${DB_NAME:absences_production}
-    username: ${DB_USERNAME:app}
-    password: ${DB_PASSWORD:change_me}
+    url: jdbc:postgresql://${POSTGRES_HOST:pgdevelopment}:${POSTGRES_PORT:5432}/${POSTGRES_DB:absencesbo}
+    username: ${POSTGRES_USER:app}
+    password: ${POSTGRES_PASSWORD:change_me}
     driver-class-name: org.postgresql.Driver
 
   hikari:
