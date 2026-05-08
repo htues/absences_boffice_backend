@@ -4,57 +4,71 @@ spring:
       on-profile: staging
 
   datasource:
-    url: jdbc:postgresql://${DB_HOST:absencesdb}:${DB_PORT:5432}/${DB_NAME:absences_staging}
-    username: ${DB_USERNAME:app}
-    password: ${DB_PASSWORD:change_me}
-
-  hikari:
-    minimum-idle: 2
-    maximum-pool-size: 10
-    connection-timeout: 30000
-    initialization-fail-timeout: 0
-    idle-timeout: 600000
-    max-lifetime: 1800000
-    validation-timeout: 5000
+    url: jdbc:postgresql://${POSTGRES_HOST:pgdevelopment}:${POSTGRES_PORT:5432}/${POSTGRES_DB:absencesbo}
+    username: ${POSTGRES_USER:app}
+    password: ${POSTGRES_PASSWORD:change_me}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      minimum-idle: 2
+      maximum-pool-size: 10
+      connection-timeout: 30000
+      initialization-fail-timeout: 0
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      validation-timeout: 5000
 
   jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    defer-datasource-initialization: false
+    generate-ddl: false
     hibernate:
       ddl-auto: validate
+    show-sql: false
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
+
+  sql:
+    init:
+      mode: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when-authorized
 
 logging:
   level:
     root: INFO
-    org.springframework.web: INFO
-    org.hibernate.SQL: DEBUG
-    com.zaxxer.hikari: DEBUG
+    com.hftamayo.java.absencesbobe: INFO
+    com.zaxxer.hikari: WARN
+    org.hibernate: WARN
     # If you want request/response details, consider enabling your package to DEBUG:
     # com.yourcompany.yourservice: DEBUG
 
 rate:
-  endpointsByVersion:
-    v1:
-      "/companies":
-        capacity: 20
-        refill-rate: 2
-        refill-duration: PT2M
-    v2:
-      "/companies":
-        capacity: 10
-        refill-rate: 1
-        refill-duration: PT1M
-
-  roles:
-    ADMIN:
-      capacity: 200
-      refill-rate: 20
-      refill-duration: PT30S
-    USER:
+  limiter:
+    default:
       capacity: 100
       refill-rate: 10
       refill-duration: PT1M
 
-app:
-  environment: staging
+  roles:
+    ADMIN:
+      capacity: 520
+      refill-rate: 20
+      refill-duration: PT1M
+    SUPERVISOR:
+      capacity: 200
+      refill-rate: 20
+      refill-duration: PT1M
+    USER:
+      capacity: 100
+      refill-rate: 10
+      refill-duration: PT1M
