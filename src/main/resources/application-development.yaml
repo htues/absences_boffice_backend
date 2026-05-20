@@ -1,7 +1,7 @@
 spring:
   config:
     activate:
-      on-profile: dev
+      on-profile: development
 
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST:pgdevelopment}:${POSTGRES_PORT:5432}/${POSTGRES_DB:absencesbo}
