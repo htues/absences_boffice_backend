@@ -1,5 +1,9 @@
-import org.springframework.stereotype.Component;
+package com.hftamayo.absencesbobe.shared.infrastructure.ratelimit;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Component;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,48 +13,21 @@ import java.util.Map;
  * Manages default, endpoint-specific, and user-specific rate limiting configurations.
  */
 @Component
+@ConfigurationProperties(prefix = "rate.limiter.default")
+@NoArgsConstructor
+@AllArgsConstructor
 public class RateLimiterConfig {
 
-    // Default configuration values
-    private static final long DEFAULT_CAPACITY = 100L;
-    private static final long DEFAULT_REFILL_RATE = 10L;
-    private static final Duration DEFAULT_REFILL_DURATION = Duration.ofMinutes(1);
-
-    // Configuration properties
-    private Long capacity;
-    private Long refillRate;
-    private Duration refillDuration;
+    // Default fallback values
+    private Long capacity = 100L;
+    private Long refillRate = 10L;
+    private Duration refillDuration = Duration.ofMinutes(1);
 
     // Endpoint-specific configurations
     private final Map<String, RateLimiterConfig> endpointConfigs = new HashMap<>();
 
     // User-specific configurations
     private final Map<String, RateLimiterConfig> userConfigs = new HashMap<>();
-
-    /**
-     * Default constructor with default values.
-     */
-    public RateLimiterConfig() {
-        loadDefaultConfiguration();
-    }
-
-    /**
-     * Constructor with custom values.
-     */
-    public RateLimiterConfig(Long capacity, Long refillRate, Duration refillDuration) {
-        this.capacity = capacity;
-        this.refillRate = refillRate;
-        this.refillDuration = refillDuration;
-    }
-
-    /**
-     * Loads default configuration values.
-     */
-    public void loadDefaultConfiguration() {
-        this.capacity = DEFAULT_CAPACITY;
-        this.refillRate = DEFAULT_REFILL_RATE;
-        this.refillDuration = DEFAULT_REFILL_DURATION;
-    }
 
     /**
      * Loads configuration from properties map.

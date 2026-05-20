@@ -1,3 +1,5 @@
+package com.hftamayo.absencesbobe.shared.infrastructure.ratelimit;
+
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.Refill;
@@ -12,10 +14,11 @@ import java.time.Duration;
 @Component
 public class RateLimiterUtil {
 
-    // Default configuration values
-    private static final long DEFAULT_CAPACITY = 100L;
-    private static final long DEFAULT_REFILL_RATE = 10L;
-    private static final Duration DEFAULT_REFILL_DURATION = Duration.ofMinutes(1);
+    private final RateLimiterConfig defaultConfig;
+
+    public RateLimiterUtil(RateLimiterConfig defaultConfig) {
+        this.defaultConfig = defaultConfig;
+    }
 
     /**
      * Creates a bucket with the specified configuration.
@@ -45,7 +48,7 @@ public class RateLimiterUtil {
      * @return A Bucket instance with default settings
      */
     public Bucket createDefaultBucket() {
-        return createBucket(DEFAULT_CAPACITY, DEFAULT_REFILL_RATE, DEFAULT_REFILL_DURATION);
+        return createBucket(defaultConfig);
     }
 
     /**
@@ -151,7 +154,7 @@ public class RateLimiterUtil {
      * @return The default capacity
      */
     public long getDefaultCapacity() {
-        return DEFAULT_CAPACITY;
+        return defaultConfig.getCapacity();
     }
 
     /**
@@ -160,7 +163,7 @@ public class RateLimiterUtil {
      * @return The default refill rate
      */
     public long getDefaultRefillRate() {
-        return DEFAULT_REFILL_RATE;
+        return defaultConfig.getRefillRate();
     }
 
     /**
@@ -169,6 +172,6 @@ public class RateLimiterUtil {
      * @return The default refill duration
      */
     public Duration getDefaultRefillDuration() {
-        return DEFAULT_REFILL_DURATION;
+        return defaultConfig.getRefillDuration();
     }
 } 
