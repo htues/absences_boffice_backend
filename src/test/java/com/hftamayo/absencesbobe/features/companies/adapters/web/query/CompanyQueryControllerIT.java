@@ -134,4 +134,17 @@ class CompanyQueryControllerIT extends AbstractPostgresIT {
         }
         return names;
     }
+
+    @Test
+    @DisplayName("GET /api/v1/companies exceeds rate limit returns 429")
+    void getActiveCompanies_exceedsRateLimit_returns429() throws Exception {
+        // The limit is 1 token per request, capacity 5. We perform 6 requests.
+        for (int i = 0; i < 5; i++) {
+            mockMvc.perform(get(BASE_URL))
+                    .andExpect(status().isOk());
+        }
+
+        mockMvc.perform(get(BASE_URL))
+                .andExpect(status().isTooManyRequests());
+    }
 }

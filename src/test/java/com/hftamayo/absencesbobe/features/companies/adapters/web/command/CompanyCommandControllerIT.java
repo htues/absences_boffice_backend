@@ -237,4 +237,31 @@ class CompanyCommandControllerIT extends AbstractPostgresIT {
         assertThat(deleted.isDeleted()).isTrue();
         assertThat(deleted.isActive()).isFalse();
     }
+
+    @Test
+    @DisplayName("POST /api/v1/companies exceeds rate limit returns 429")
+    void createCompany_exceedsRateLimit_returns429() throws Exception {
+        String requestBody = """
+        {
+          "name": "RateLimitTest",
+          "description": "Technology company",
+          "address": "123 Main Street"
+        }
+        """;
+
+        // The limit is 5 tokens. We perform 6 requests.
+        for (int i = 0; i < 5; i++) {
+            mockMvc.perform(
+                    post(BASE_URL)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(requestBody)
+            ).andExpect(status().isCreated());
+        }
+
+        mockMvc.perform(
+                post(BASE_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody)
+        ).andExpect(status().isTooManyRequests());
+    }
 }
