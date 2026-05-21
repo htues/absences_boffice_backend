@@ -5,6 +5,7 @@ import com.hftamayo.absencesbobe.features.companies.adapters.web.mapper.CompanyR
 import com.hftamayo.absencesbobe.features.companies.application.ports.in.CompanyQueryPort;
 import com.hftamayo.absencesbobe.features.companies.domain.Company;
 import com.hftamayo.absencesbobe.shared.application.result.Result;
+import com.hftamayo.absencesbobe.shared.infrastructure.ratelimit.RateLimit;
 import com.hftamayo.absencesbobe.shared.web.constants.ApiResponseDescriptor;
 import com.hftamayo.absencesbobe.shared.web.constants.ErrorApiResponse;
 import com.hftamayo.absencesbobe.shared.web.constants.SuccessApiResponse;
@@ -56,6 +57,7 @@ public class CompanyQueryController {
         this(companyQueryPort, companyResponseMapper, 10, 100);
     }
 
+    @RateLimit(tokens = 1)
     @GetMapping
     public ResponseEntity<ApiResponseDto<?>> getActiveCompanies(
             @RequestParam(required = false) Integer page,
