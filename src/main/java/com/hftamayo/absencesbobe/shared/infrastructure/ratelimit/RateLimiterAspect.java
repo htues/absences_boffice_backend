@@ -1,7 +1,11 @@
+package com.hftamayo.absencesbobe.shared.infrastructure.ratelimit;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hftamayo.java.todo.dto.EndpointResponseDto;
-import com.hftamayo.java.todo.dto.error.ErrorResponseDto;
+import com.hftamayo.absencesbobe.shared.web.constants.ErrorApiResponse;
+import com.hftamayo.absencesbobe.shared.web.dto.ApiResponseDto;
+import com.hftamayo.absencesbobe.shared.web.error.RateLimiterError;
 import io.github.bucket4j.Bucket;
+import lombok.AllArgsConstructor;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -26,6 +30,7 @@ import java.time.ZoneOffset;
  */
 @Aspect
 @Component
+@AllArgsConstructor
 public class RateLimiterAspect {
 
     private static final Logger logger = LoggerFactory.getLogger(RateLimiterAspect.class);
@@ -35,12 +40,6 @@ public class RateLimiterAspect {
     private final RateLimiterConfig rateLimiterConfig;
     private final ObjectMapper objectMapper;
 
-    public RateLimiterAspect(RateLimiterUtil rateLimiterUtil, RateLimiterConfig rateLimiterConfig, ObjectMapper objectMapper) {
-        this.rateLimiterUtil = rateLimiterUtil;
-        this.rateLimiterConfig = rateLimiterConfig;
-        this.objectMapper = objectMapper;
-    }
-
     /**
      * Around advice that intercepts methods annotated with @RateLimit.
      *
@@ -48,19 +47,19 @@ public class RateLimiterAspect {
      * @return The result of the method execution or rate limit error response
      * @throws Throwable If an error occurs during execution
      */
-    @Around("@annotation(com.hftamayo.java.todo.utilities.ratelimit.RateLimit)")
+    @Around("@annotation(com.hftamayo.absencesbobe.shared.infrastructure.ratelimit.RateLimit)")
     public Object rateLimit(ProceedingJoinPoint joinPoint) throws Throwable {
         // Get request context
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         if (attributes == null) {
-            throw new RateLimiterException("Request context not available");
+            throw new RateLimiterError("Request context not available");
         }
 
         HttpServletRequest request = attributes.getRequest();
         HttpServletResponse response = attributes.getResponse();
 
         if (request == null || response == null) {
-            throw new RateLimiterException("HTTP request/response not available");
+            throw new RateLimiterError("HTTP request/response not available");
         }
 
         // Get method and annotation
@@ -103,7 +102,7 @@ public class RateLimiterAspect {
 
         } catch (Exception e) {
             logger.error("Error during rate limiting for endpoint: {}, user: {}", endpoint, userRole, e);
-            throw new RateLimiterException("Rate limiting error", e);
+            throw new RateLimiterError("Rate limiting error", e);
         }
     }
 
@@ -162,17 +161,9 @@ public class RateLimiterAspect {
             response.setContentType("application/json");
 
             // Create error response using our envelope pattern
-            ErrorResponseDto errorResponse = new ErrorResponseDto(
-                LocalDateTime.now(ZoneOffset.UTC),
-                HttpStatus.TOO_MANY_REQUESTS,
-                "Rate limit exceeded",
-                "Too many requests"
-            );
-
-            EndpointResponseDto<ErrorResponseDto> envelopeResponse = new EndpointResponseDto<>(
-                HttpStatus.TOO_MANY_REQUESTS.value(),
-                "RATE_LIMIT_EXCEEDED",
-                errorResponse
+            ApiResponseDto<Void> envelopeResponse = ApiResponseDto.fail(
+                    ErrorApiResponse.RATE_LIMITED,
+                    null
             );
 
             // Set rate limit headers even for error responses
@@ -186,7 +177,7 @@ public class RateLimiterAspect {
 
         } catch (IOException e) {
             logger.error("Error writing rate limit error response", e);
-            throw new RateLimiterException("Error creating rate limit response", e);
+            throw new RateLimiterError("Error creating rate limit response", e);
         }
     }
 
