@@ -3,6 +3,7 @@ package com.hftamayo.absencesbobe.shared.infrastructure.ratelimit;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.Refill;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -12,13 +13,10 @@ import java.time.Duration;
  * Provides methods for creating buckets, consuming tokens, and managing rate limits.
  */
 @Component
+@AllArgsConstructor
 public class RateLimiterUtil {
 
     private final RateLimiterConfig defaultConfig;
-
-    public RateLimiterUtil(RateLimiterConfig defaultConfig) {
-        this.defaultConfig = defaultConfig;
-    }
 
     /**
      * Creates a bucket with the specified configuration.
