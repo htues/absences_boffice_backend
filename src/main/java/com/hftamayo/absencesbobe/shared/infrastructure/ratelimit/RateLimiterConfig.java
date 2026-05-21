@@ -1,7 +1,9 @@
 package com.hftamayo.absencesbobe.shared.infrastructure.ratelimit;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.stereotype.Component;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.time.Duration;
@@ -16,6 +18,8 @@ import java.util.Map;
 @ConfigurationProperties(prefix = "rate.limiter.default")
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 public class RateLimiterConfig {
 
     // Default fallback values
@@ -70,6 +74,12 @@ public class RateLimiterConfig {
         RateLimiterConfig endpointConfig = new RateLimiterConfig();
         String prefix = "rate.limiter.endpoints." + endpoint + ".";
 
+        setRateLimitValues(endpoint, properties, endpointConfig, prefix, endpointConfigs);
+    }
+
+    private void setRateLimitValues(String endpoint, Map<String, Object> properties,
+                                    RateLimiterConfig endpointConfig, String prefix,
+                                    Map<String, RateLimiterConfig> endpointConfigs) {
         Object capacityObj = properties.get(prefix + "capacity");
         Object refillRateObj = properties.get(prefix + "refill-rate");
         Object refillDurationObj = properties.get(prefix + "refill-duration");
@@ -103,23 +113,7 @@ public class RateLimiterConfig {
         RateLimiterConfig userConfig = new RateLimiterConfig();
         String prefix = "rate.limiter.users." + userRole + ".";
 
-        Object capacityObj = properties.get(prefix + "capacity");
-        Object refillRateObj = properties.get(prefix + "refill-rate");
-        Object refillDurationObj = properties.get(prefix + "refill-duration");
-
-        if (capacityObj != null) {
-            userConfig.setCapacity(parseLong(capacityObj));
-        }
-
-        if (refillRateObj != null) {
-            userConfig.setRefillRate(parseLong(refillRateObj));
-        }
-
-        if (refillDurationObj != null) {
-            userConfig.setRefillDuration(parseDuration(refillDurationObj.toString()));
-        }
-
-        userConfigs.put(userRole, userConfig);
+        setRateLimitValues(userRole, properties, userConfig, prefix, userConfigs);
     }
 
     /**
@@ -267,31 +261,6 @@ public class RateLimiterConfig {
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Invalid number format: " + obj, e);
         }
-    }
-
-    // Getters and Setters
-    public Long getCapacity() {
-        return capacity;
-    }
-
-    public void setCapacity(Long capacity) {
-        this.capacity = capacity;
-    }
-
-    public Long getRefillRate() {
-        return refillRate;
-    }
-
-    public void setRefillRate(Long refillRate) {
-        this.refillRate = refillRate;
-    }
-
-    public Duration getRefillDuration() {
-        return refillDuration;
-    }
-
-    public void setRefillDuration(Duration refillDuration) {
-        this.refillDuration = refillDuration;
     }
 
     public Map<String, RateLimiterConfig> getEndpointConfigs() {
