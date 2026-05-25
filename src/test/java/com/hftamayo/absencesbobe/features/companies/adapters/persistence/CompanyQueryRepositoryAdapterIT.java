@@ -1,8 +1,8 @@
 package com.hftamayo.absencesbobe.features.companies.adapters.persistence;
 
 import com.hftamayo.absencesbobe.features.companies.domain.Company;
-import com.hftamayo.absencesbobe.features.shared.test.AbstractPostgresIT;
 import com.hftamayo.absencesbobe.shared.infrastructure.audit.AuditorAwareConfig;
+import com.hftamayo.absencesbobe.shared.test.AbstractPostgresIT;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
