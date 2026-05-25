@@ -251,17 +251,27 @@ class CompanyCommandControllerIT extends AbstractPostgresIT {
 
         // The limit is 5 tokens. We perform 6 requests.
         for (int i = 0; i < 5; i++) {
-            mockMvc.perform(
-                    post(BASE_URL)
+            mockMvc.perform(post(BASE_URL)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(requestBody)
-            ).andExpect(status().isCreated());
+                            .content("""
+                            {
+                              "name": "RateLimitCompany-%d-%s",
+                              "description": "Description",
+                              "address": "Address"
+                            }
+                            """.formatted(i, UUID.randomUUID())))
+                    .andExpect(status().isCreated());
         }
 
-        mockMvc.perform(
-                post(BASE_URL)
+        mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody)
-        ).andExpect(status().isTooManyRequests());
+                        .content("""
+                        {
+                          "name": "RateLimitCompany-blocked-%s",
+                          "description": "Description",
+                          "address": "Address"
+                        }
+                        """.formatted(UUID.randomUUID())))
+                .andExpect(status().isTooManyRequests());
     }
 }
