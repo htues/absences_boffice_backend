@@ -13,6 +13,7 @@ import com.hftamayo.absencesbobe.shared.web.dto.ApiResponseDto;
 import com.hftamayo.absencesbobe.shared.web.dto.PaginationDto;
 import com.hftamayo.absencesbobe.shared.web.factory.ApiResponseFactory;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -60,8 +61,8 @@ public class CompanyQueryController {
     @RateLimit(tokens = 1)
     @GetMapping
     public ResponseEntity<ApiResponseDto<?>> getActiveCompanies(
-            @RequestParam(required = false) Integer page,
-            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) @Min(0) Integer page,
+            @RequestParam(required = false) @Min(1) Integer size,
             HttpServletRequest request
     ) {
         try {

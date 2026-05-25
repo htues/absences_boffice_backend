@@ -21,6 +21,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Aspect for rate limiting method calls using AOP.
@@ -37,6 +39,8 @@ public class RateLimiterAspect {
     private final RateLimiterUtil rateLimiterUtil;
     private final RateLimiterConfig rateLimiterConfig;
     private final ObjectMapper objectMapper;
+
+    private final ConcurrentMap<String, Bucket> buckets = new ConcurrentHashMap<>();
 
     /**
      * Around advice that intercepts methods annotated with @RateLimit.
@@ -78,9 +82,9 @@ public class RateLimiterAspect {
         try {
             // Get combined configuration for endpoint and user
             RateLimiterConfig config = rateLimiterConfig.getCombinedConfig(endpoint, userRole);
-            
-            // Create bucket for this configuration
-            Bucket bucket = rateLimiterUtil.createBucket(config);
+
+            String bucketKey = endpoint + ":" + userRole;
+            Bucket bucket = buckets.computeIfAbsent(bucketKey, ignored -> rateLimiterUtil.createBucket(config));
 
             // Try to consume tokens
             boolean consumed = rateLimiterUtil.tryConsume(bucket, tokensToConsume);
@@ -88,13 +92,13 @@ public class RateLimiterAspect {
             if (consumed) {
                 // Tokens consumed successfully, set headers and proceed
                 setRateLimitHeaders(response, bucket, config);
-                logger.debug("Rate limit check passed for endpoint: {}, user: {}, tokens consumed: {}", 
-                           endpoint, userRole, tokensToConsume);
+                logger.debug("Rate limit check passed for endpoint: {}, user: {}, tokens consumed: {}",
+                        endpoint, userRole, tokensToConsume);
                 return joinPoint.proceed();
             } else {
                 // Rate limit exceeded, return error response
-                logger.warn("Rate limit exceeded for endpoint: {}, user: {}, requested tokens: {}", 
-                          endpoint, userRole, tokensToConsume);
+                logger.warn("Rate limit exceeded for endpoint: {}, user: {}, requested tokens: {}",
+                        endpoint, userRole, tokensToConsume);
                 return createRateLimitErrorResponse(response, bucket, config);
             }
 

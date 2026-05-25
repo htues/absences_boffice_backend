@@ -133,7 +133,7 @@ class CompanyQueryControllerTest {
                 .thenReturn(Result.ok(empty));
         when(mapper.toDtoPageContent(empty)).thenReturn(List.of());
 
-        ResponseEntity<ApiResponseDto<?>> response = controller.getActiveCompanies(-1, 0, request);
+        ResponseEntity<ApiResponseDto<?>> response = controller.getActiveCompanies(-1, null, request);
 
         assertEquals(SuccessApiResponse.READ.getStatusCode(), response.getStatusCode().value());
         assertNotNull(response.getBody());
