@@ -1,10 +1,7 @@
-package com.hftamayo.absencesbobe.features.shared.application.result;
+package com.hftamayo.absencesbobe.shared.application.result;
 
-import com.hftamayo.absencesbobe.shared.application.result.Result;
 import org.junit.jupiter.api.Test;
-
 import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class ResultTest {

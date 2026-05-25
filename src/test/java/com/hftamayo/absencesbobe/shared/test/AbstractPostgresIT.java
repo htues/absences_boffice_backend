@@ -1,4 +1,4 @@
-package com.hftamayo.absencesbobe.features.shared.test;
+package com.hftamayo.absencesbobe.shared.test;
 
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;

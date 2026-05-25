@@ -1,6 +1,5 @@
-package com.hftamayo.absencesbobe.features.shared.application.errors;
+package com.hftamayo.absencesbobe.shared.application.errors;
 
-import com.hftamayo.absencesbobe.shared.application.errors.UnknownErrorHandler;
 import com.hftamayo.absencesbobe.shared.application.result.Result;
 import com.hftamayo.absencesbobe.shared.web.constants.ApiResponseDescriptor;
 import com.hftamayo.absencesbobe.shared.web.constants.ErrorApiResponse;
