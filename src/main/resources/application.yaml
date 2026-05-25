@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: ${EXECUTION_MODE:dev}
+    active: ${EXECUTION_MODE:development}
   application:
     name: absences-backoffice
     description: "Absences Back Office"
