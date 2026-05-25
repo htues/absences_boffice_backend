@@ -1,9 +1,11 @@
 package com.hftamayo.absencesbobe.shared.test;
 
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 
+@ActiveProfiles("test")
 public abstract class AbstractPostgresIT {
 
     private static final String TEST_DB_NAME = resolve("TEST_DB_NAME", "test_db");
