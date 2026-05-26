@@ -42,6 +42,10 @@ public class RateLimiterAspect {
 
     private final ConcurrentMap<String, Bucket> buckets = new ConcurrentHashMap<>();
 
+    public void clearBuckets() {
+        buckets.clear();
+    }
+
     /**
      * Around advice that intercepts methods annotated with @RateLimit.
      *
@@ -94,7 +98,6 @@ public class RateLimiterAspect {
                 setRateLimitHeaders(response, bucket, config);
                 logger.debug("Rate limit check passed for endpoint: {}, user: {}, tokens consumed: {}",
                         endpoint, userRole, tokensToConsume);
-                return joinPoint.proceed();
             } else {
                 // Rate limit exceeded, return error response
                 logger.warn("Rate limit exceeded for endpoint: {}, user: {}, requested tokens: {}",
@@ -106,6 +109,7 @@ public class RateLimiterAspect {
             logger.error("Error during rate limiting for endpoint: {}, user: {}", endpoint, userRole, e);
             throw new RateLimiterError("Rate limiting error", e);
         }
+        return joinPoint.proceed();
     }
 
     /**
