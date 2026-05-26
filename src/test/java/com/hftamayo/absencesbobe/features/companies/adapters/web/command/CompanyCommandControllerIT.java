@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hftamayo.absencesbobe.features.companies.adapters.persistence.CompanyJpaEntity;
 import com.hftamayo.absencesbobe.features.companies.adapters.persistence.CompanySpringDataRepository;
+import com.hftamayo.absencesbobe.shared.infrastructure.ratelimit.RateLimiterAspect;
 import com.hftamayo.absencesbobe.shared.test.AbstractPostgresIT;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +24,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@SpringBootTest(properties = {
+        "rate.limiter.default.capacity=25",
+        "rate.limiter.default.refill-rate=1",
+        "rate.limiter.default.refill-duration=PT1H"
+})
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class CompanyCommandControllerIT extends AbstractPostgresIT {
@@ -37,6 +43,14 @@ class CompanyCommandControllerIT extends AbstractPostgresIT {
 
     @Autowired
     private CompanySpringDataRepository companyRepository;
+
+    @Autowired
+    private RateLimiterAspect rateLimiterAspect;
+
+    @BeforeEach
+    void resetRateLimiter() {
+        rateLimiterAspect.clearBuckets();
+    }
 
     @Test
     @DisplayName("POST /api/v1/companies creates company and persists it")
@@ -255,11 +269,11 @@ class CompanyCommandControllerIT extends AbstractPostgresIT {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
                             {
-                              "name": "RateLimitCompany-%d-%s",
+                              "name": "RLCompany-%d-%s",
                               "description": "Description",
                               "address": "Address"
                             }
-                            """.formatted(i, UUID.randomUUID())))
+                            """.formatted(i, UUID.randomUUID().toString().substring(0, 8))))
                     .andExpect(status().isCreated());
         }
 
@@ -267,11 +281,11 @@ class CompanyCommandControllerIT extends AbstractPostgresIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                         {
-                          "name": "RateLimitCompany-blocked-%s",
+                          "name": "RLCompany-blocked-%s",
                           "description": "Description",
                           "address": "Address"
                         }
-                        """.formatted(UUID.randomUUID())))
+                        """.formatted(UUID.randomUUID().toString().substring(0, 8))))
                 .andExpect(status().isTooManyRequests());
     }
 }
