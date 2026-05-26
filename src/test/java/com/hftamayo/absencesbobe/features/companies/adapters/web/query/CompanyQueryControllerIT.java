@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hftamayo.absencesbobe.features.companies.adapters.persistence.CompanyJpaEntity;
 import com.hftamayo.absencesbobe.features.companies.adapters.persistence.CompanySpringDataRepository;
+import com.hftamayo.absencesbobe.shared.infrastructure.ratelimit.RateLimiterAspect;
 import com.hftamayo.absencesbobe.shared.test.AbstractPostgresIT;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +51,14 @@ class CompanyQueryControllerIT extends AbstractPostgresIT {
 
     @Autowired
     private CompanySpringDataRepository companyRepository;
+
+    @Autowired
+    private RateLimiterAspect rateLimiterAspect;
+
+    @BeforeEach
+    void resetRateLimiter() {
+        rateLimiterAspect.clearBuckets();
+    }
 
     @Test
     @DisplayName("GET /api/v1/companies returns only active and non-deleted companies")
@@ -173,8 +183,8 @@ class CompanyQueryControllerIT extends AbstractPostgresIT {
 
     @Test
     @DisplayName("GET /api/v1/companies with invalid page size returns 400")
-    void getActiveCompanies_invalidPageSize_returns400() throws Exception {
+    void getActiveCompanies_invalidPageSize_returns422() throws Exception {
         mockMvc.perform(get(BASE_URL).param("page", "0").param("size", "0"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
     }
 }
