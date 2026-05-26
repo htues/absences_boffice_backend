@@ -6,6 +6,7 @@ import com.hftamayo.absencesbobe.features.companies.adapters.web.mapper.CompanyR
 import com.hftamayo.absencesbobe.features.companies.application.ports.in.CompanyCommandPort;
 import com.hftamayo.absencesbobe.features.companies.domain.Company;
 import com.hftamayo.absencesbobe.shared.application.result.Result;
+import com.hftamayo.absencesbobe.shared.infrastructure.ratelimit.RateLimit;
 import com.hftamayo.absencesbobe.shared.web.constants.ApiResponseDescriptor;
 import com.hftamayo.absencesbobe.shared.web.constants.ErrorApiResponse;
 import com.hftamayo.absencesbobe.shared.web.constants.SuccessApiResponse;
@@ -33,6 +34,7 @@ public class CompanyCommandController {
     private final CompanyCommandPort companyCommandPort;
     private final CompanyResponseMapper companyResponseMapper;
 
+    @RateLimit(tokens = 5)
     @PostMapping
     public ResponseEntity<ApiResponseDto<?>> createCompany(@RequestBody @Valid CreateCompanyRequest rawCompany,
                                                            HttpServletRequest request) {
@@ -45,6 +47,7 @@ public class CompanyCommandController {
         );
     }
 
+    @RateLimit(tokens = 5)
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponseDto<?>> updateCompany(
             @PathVariable @Positive Long id,
@@ -61,6 +64,7 @@ public class CompanyCommandController {
         );
     }
 
+    @RateLimit(tokens = 5)
     @PutMapping("/{id}/deactivate")
     public ResponseEntity<ApiResponseDto<?>> deactivateCompany(
             @PathVariable @Positive Long id,
@@ -76,6 +80,7 @@ public class CompanyCommandController {
         );
     }
 
+    @RateLimit(tokens = 5)
     @PutMapping("/{id}/activate")
     public ResponseEntity<ApiResponseDto<?>> activateCompany(
             @PathVariable @Positive Long id,
@@ -91,6 +96,7 @@ public class CompanyCommandController {
         );
     }
 
+    @RateLimit(tokens = 5)
     @PutMapping("/{id}/restore")
     public ResponseEntity<ApiResponseDto<?>> restoreCompany(
             @PathVariable @Positive Long id,
@@ -106,6 +112,7 @@ public class CompanyCommandController {
         );
     }
 
+    @RateLimit(tokens = 5)
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<ApiResponseDto<?>> deleteCompany(@PathVariable @Positive Long id, HttpServletRequest request) {
         return handle(

@@ -1,16 +1,19 @@
-package com.hftamayo.absencesbobe.features.shared.test;
+package com.hftamayo.absencesbobe.shared.test;
 
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 
+@ActiveProfiles("test")
 public abstract class AbstractPostgresIT {
 
     private static final String TEST_DB_NAME = resolve("TEST_DB_NAME", "test_db");
     private static final String TEST_DB_USER = resolve("TEST_USER_NAME", "test_user");
     private static final String TEST_DB_PASSWORD = resolve("TEST_USER_PASSWORD", "test_password");
+    private static final String POSTGRES_IMAGE = "postgres:16-alpine";
 
-    private static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine")
+    private static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>(POSTGRES_IMAGE)
             .withDatabaseName(TEST_DB_NAME)
             .withUsername(TEST_DB_USER)
             .withPassword(TEST_DB_PASSWORD);

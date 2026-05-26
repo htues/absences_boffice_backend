@@ -4,8 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hftamayo.absencesbobe.features.companies.adapters.persistence.CompanyJpaEntity;
 import com.hftamayo.absencesbobe.features.companies.adapters.persistence.CompanySpringDataRepository;
-import com.hftamayo.absencesbobe.features.companies.domain.Company;
-import com.hftamayo.absencesbobe.features.shared.test.AbstractPostgresIT;
+import com.hftamayo.absencesbobe.shared.infrastructure.ratelimit.RateLimiterAspect;
+import com.hftamayo.absencesbobe.shared.test.AbstractPostgresIT;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@SpringBootTest(properties = {
+        "rate.limiter.default.capacity=5",
+        "rate.limiter.default.refill-rate=1",
+        "rate.limiter.default.refill-duration=PT1H",
+        "rate.limiter.roles.ADMIN.capacity=5",
+        "rate.limiter.roles.ADMIN.refill-rate=1",
+        "rate.limiter.roles.ADMIN.refill-duration=PT1H",
+        "rate.limiter.roles.SUPERVISOR.capacity=5",
+        "rate.limiter.roles.SUPERVISOR.refill-rate=1",
+        "rate.limiter.roles.SUPERVISOR.refill-duration=PT1H",
+        "rate.limiter.roles.USER.capacity=5",
+        "rate.limiter.roles.USER.refill-rate=1",
+        "rate.limiter.roles.USER.refill-duration=PT1H"
+})
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class CompanyQueryControllerIT extends AbstractPostgresIT {
@@ -37,6 +51,14 @@ class CompanyQueryControllerIT extends AbstractPostgresIT {
 
     @Autowired
     private CompanySpringDataRepository companyRepository;
+
+    @Autowired
+    private RateLimiterAspect rateLimiterAspect;
+
+    @BeforeEach
+    void resetRateLimiter() {
+        rateLimiterAspect.clearBuckets();
+    }
 
     @Test
     @DisplayName("GET /api/v1/companies returns only active and non-deleted companies")
@@ -133,5 +155,36 @@ class CompanyQueryControllerIT extends AbstractPostgresIT {
             names.add(rawName.split("-", 2)[0]);
         }
         return names;
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/companies exceeds rate limit returns 429")
+    void getActiveCompanies_exceedsRateLimit_returns429() throws Exception {
+        // The limit is 1 token per request, capacity 5. We perform 6 requests.
+        for (int i = 0; i < 5; i++) {
+            int requestNumber = i + 1;
+
+            mockMvc.perform(get(BASE_URL))
+                    .andDo(result -> {
+                        System.out.println("Request " + requestNumber
+                                + " remaining="
+                                + result.getResponse().getHeader("X-RateLimit-Remaining"));
+                    })
+                    .andExpect(status().isOk());
+        }
+
+        mockMvc.perform(get(BASE_URL))
+                .andDo(result -> {
+                    System.out.println("Request 6 remaining="
+                            + result.getResponse().getHeader("X-RateLimit-Remaining"));
+                })
+                .andExpect(status().isTooManyRequests());
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/companies with invalid page size returns 400")
+    void getActiveCompanies_invalidPageSize_returns422() throws Exception {
+        mockMvc.perform(get(BASE_URL).param("page", "0").param("size", "0"))
+                .andExpect(status().isUnprocessableEntity());
     }
 }

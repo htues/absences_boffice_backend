@@ -1,6 +1,6 @@
 package com.hftamayo.absencesbobe;
 
-import com.hftamayo.absencesbobe.features.shared.test.AbstractPostgresIT;
+import com.hftamayo.absencesbobe.shared.test.AbstractPostgresIT;
 import com.hftamayo.absencesbobe.shared.web.jackson.JacksonTrimmingConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
