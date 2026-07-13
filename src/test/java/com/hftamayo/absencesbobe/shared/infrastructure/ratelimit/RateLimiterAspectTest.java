@@ -1,6 +1,7 @@
 package com.hftamayo.absencesbobe.shared.infrastructure.ratelimit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hftamayo.absencesbobe.shared.web.error.RateLimiterError;
 import io.github.bucket4j.Bucket;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -31,7 +32,7 @@ public class RateLimiterAspectTest {
     void setUp() {
         rateLimiterUtil = mock(RateLimiterUtil.class);
         rateLimiterConfig = mock(RateLimiterConfig.class);
-        objectMapper = new ObjectMapper();
+        objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
         aspect = new RateLimiterAspect(rateLimiterUtil, rateLimiterConfig, objectMapper);
     }
 
