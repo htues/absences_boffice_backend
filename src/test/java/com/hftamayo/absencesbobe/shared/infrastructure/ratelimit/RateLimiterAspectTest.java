@@ -3,6 +3,7 @@ package com.hftamayo.absencesbobe.shared.infrastructure.ratelimit;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hftamayo.absencesbobe.shared.web.error.RateLimiterError;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.github.bucket4j.Bucket;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
@@ -120,7 +121,12 @@ public class RateLimiterAspectTest {
         assertEquals("3", response.getHeader("X-RateLimit-Limit"));
         assertEquals("0", response.getHeader("X-RateLimit-Remaining"));
         assertNotNull(response.getHeader("X-RateLimit-Reset"));
-        assertTrue(response.getContentAsString().contains("RATE_LIMITED"));
+
+        JsonNode body = objectMapper.readTree(response.getContentAsString());
+        assertEquals("error", body.get("responseType").asText());
+        assertEquals(429, body.get("statusCode").asInt());
+        assertEquals("RATE_LIMIT_EXCEEDED", body.get("resultMessage").asText());
+        assertTrue(body.get("timestamp").isTextual());
 
         verify(joinPoint).getSignature();
         verify(signature).getMethod();
