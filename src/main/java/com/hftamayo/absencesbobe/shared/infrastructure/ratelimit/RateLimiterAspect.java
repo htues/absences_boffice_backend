@@ -82,12 +82,16 @@ public class RateLimiterAspect {
         String endpoint = request.getRequestURI();
         String userRole = extractUserRole(request);
         long tokensToConsume = rateLimitAnnotation.tokens();
+        String rateLimitKey = rateLimitAnnotation.key();
+        String configKey = (rateLimitKey == null || rateLimitKey.trim().isEmpty())
+                ? endpoint
+                : rateLimitKey.trim();
 
         try {
             // Get combined configuration for endpoint and user
-            RateLimiterConfig config = rateLimiterConfig.getCombinedConfig(endpoint, userRole);
+            RateLimiterConfig config = rateLimiterConfig.getCombinedConfig(configKey, userRole);
 
-            String bucketKey = endpoint + ":" + userRole;
+            String bucketKey = configKey + ":" + userRole;
             Bucket bucket = buckets.computeIfAbsent(bucketKey, ignored -> rateLimiterUtil.createBucket(config));
 
             // Try to consume tokens
@@ -96,17 +100,17 @@ public class RateLimiterAspect {
             if (consumed) {
                 // Tokens consumed successfully, set headers and proceed
                 setRateLimitHeaders(response, bucket, config);
-                logger.debug("Rate limit check passed for endpoint: {}, user: {}, tokens consumed: {}",
-                        endpoint, userRole, tokensToConsume);
+                logger.debug("Rate limit check passed for key: {}, user: {}, tokens consumed: {}",
+                        configKey, userRole, tokensToConsume);
             } else {
                 // Rate limit exceeded, return error response
-                logger.warn("Rate limit exceeded for endpoint: {}, user: {}, requested tokens: {}",
-                        endpoint, userRole, tokensToConsume);
+                logger.warn("Rate limit exceeded for key: {}, user: {}, requested tokens: {}",
+                        configKey, userRole, tokensToConsume);
                 return createRateLimitErrorResponse(response, bucket, config);
             }
 
         } catch (Exception e) {
-            logger.error("Error during rate limiting for endpoint: {}, user: {}", endpoint, userRole, e);
+            logger.error("Error during rate limiting for key: {}, user: {}", configKey, userRole, e);
             throw new RateLimiterError("Rate limiting error", e);
         }
         return joinPoint.proceed();

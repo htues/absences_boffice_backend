@@ -21,4 +21,12 @@ public @interface RateLimit {
      * @return The number of tokens to consume
      */
     long tokens() default 1L;
-} 
+
+    /**
+     * Optional logical key for the rate limit policy.
+     * When left empty, the aspect falls back to the request URI.
+     *
+     * @return The logical rate limit key
+     */
+    String key() default "";
+}
