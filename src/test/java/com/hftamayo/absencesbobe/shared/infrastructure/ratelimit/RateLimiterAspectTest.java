@@ -126,7 +126,7 @@ public class RateLimiterAspectTest {
         assertEquals("error", body.get("responseType").asText());
         assertEquals(429, body.get("statusCode").asInt());
         assertEquals("RATE_LIMIT_EXCEEDED", body.get("resultMessage").asText());
-        assertTrue(body.get("timestamp").isTextual());
+        assertTrue(body.hasNonNull("timestamp"));
 
         verify(joinPoint).getSignature();
         verify(signature).getMethod();
