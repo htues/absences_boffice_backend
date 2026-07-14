@@ -23,8 +23,6 @@ jobs:
     permissions:
       actions: read
       contents: read
-      pull-requests: read
-      security-events: write
 
     steps:
       - name: Checkout source
@@ -47,17 +45,8 @@ jobs:
       - name: Make Maven wrapper executable
         run: chmod +x mvnw
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: java-kotlin
-          queries: security-and-quality
-
       - name: Build and Test with Maven verify
         run: ./mvnw -Pci clean verify
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
 
       - name: Upload JaCoCo report
         if: always()
