@@ -1,25 +1,25 @@
 name: Build and Push Docker Image
 
 on:
-  push:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
     branches:
       - main
-    paths:
-      - "src/**"
-      - "Dockerfile"
-      - "pom.xml"
-      - ".mvn/**"
-      - "mvnw"
-      - "mvnw.cmd"
-      - ".github/workflows/docker_build_push.yml"
+    # Note: paths are not supported for workflow_run trigger
 
 jobs:
   docker:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -28,7 +28,7 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_PAT }}
 
       - name: Set image tag
-        run: echo "IMAGE_TAG=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+        run: echo "IMAGE_TAG=$(echo ${{ github.event.workflow_run.head_sha }} | cut -c1-7)" >> "$GITHUB_ENV"
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
