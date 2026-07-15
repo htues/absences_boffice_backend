@@ -37,3 +37,20 @@ jobs:
           push: true
           tags: |
             hftamayo/absencesbobe:${{ env.IMAGE_TAG }}
+
+      - name: Notify Slack on successful image push
+        continue-on-error: true
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          REPOSITORY: hftamayo/absencesbobe
+          COMMIT_SHA: ${{ github.event.workflow_run.head_sha }}
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+        run: |
+          payload=$(printf '{"text":"AbsencesBEBO `%s:%s` was built and pushed successfully from commit `%s`."}' \
+            "$REPOSITORY" \
+            "$IMAGE_TAG" \
+            "${COMMIT_SHA:0:7}")
+          curl -fsSL -X POST \
+            -H 'Content-type: application/json' \
+            --data "$payload" \
+            "$SLACK_WEBHOOK_URL"
