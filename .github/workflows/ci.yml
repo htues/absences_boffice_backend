@@ -59,7 +59,7 @@ jobs:
         run: chmod +x mvnw
 
       - name: Build and Test with Maven verify
-        run: ./mvnw -Pci clean verify
+        run: ./mvnw clean verify -Pci -Dspring.profiles.active=test
 
       - name: Upload JaCoCo report
         if: always()
