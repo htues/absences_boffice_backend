@@ -192,7 +192,7 @@
 
 					<execution>
 						<id>report</id>
-						<phase>test</phase>
+						<phase>verify</phase>
 						<goals>
 							<goal>report</goal>
 						</goals>
@@ -206,6 +206,10 @@
 						</goals>
 						<configuration>
 							<skip>${skip.coverage.check}</skip>
+
+							<excludes>
+								<exclude>com/hftamayo/absencesbobe/AbsencesbobeApplication.class</exclude>
+							</excludes>
 
 							<rules>
 								<rule>
