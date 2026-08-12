@@ -50,6 +50,18 @@ public class RateLimiterConfigTest {
     }
 
     @Test
+    @DisplayName("loadConfigurationFromProperties: preserves defaults when properties are absent")
+    void loadConfigurationFromProperties_emptyInput_preservesDefaults() {
+        RateLimiterConfig config = new RateLimiterConfig();
+
+        config.loadConfigurationFromProperties(Map.of());
+
+        assertEquals(100L, config.getCapacity());
+        assertEquals(10L, config.getRefillRate());
+        assertEquals(Duration.ofMinutes(1), config.getRefillDuration());
+    }
+
+    @Test
     @DisplayName("loadEndpointConfiguration: stores endpoint-specific overrides")
     void loadEndpointConfiguration_storesEndpointOverrides() {
         RateLimiterConfig config = new RateLimiterConfig();
@@ -157,6 +169,52 @@ public class RateLimiterConfigTest {
     }
 
     @Test
+    @DisplayName("mergeConfigurations: handles null values within both configurations")
+    void mergeConfigurations_handlesNullableValues() {
+        RateLimiterConfig config = new RateLimiterConfig();
+        RateLimiterConfig base = new RateLimiterConfig();
+        RateLimiterConfig override = new RateLimiterConfig();
+
+        base.setCapacity(null);
+        base.setRefillRate(null);
+        base.setRefillDuration(null);
+        override.setCapacity(25L);
+        override.setRefillRate(5L);
+        override.setRefillDuration(Duration.ofMinutes(2));
+
+        RateLimiterConfig valuesFromOverride = config.mergeConfigurations(base, override);
+        assertEquals(25L, valuesFromOverride.getCapacity());
+        assertEquals(5L, valuesFromOverride.getRefillRate());
+        assertEquals(Duration.ofMinutes(2), valuesFromOverride.getRefillDuration());
+
+        base.setCapacity(40L);
+        base.setRefillRate(8L);
+        base.setRefillDuration(Duration.ofMinutes(3));
+        override.setCapacity(null);
+        override.setRefillRate(null);
+        override.setRefillDuration(null);
+
+        RateLimiterConfig valuesFromBase = config.mergeConfigurations(base, override);
+        assertEquals(40L, valuesFromBase.getCapacity());
+        assertEquals(8L, valuesFromBase.getRefillRate());
+        assertEquals(Duration.ofMinutes(3), valuesFromBase.getRefillDuration());
+    }
+
+    @Test
+    @DisplayName("mergeConfigurations: selects the longer base duration")
+    void mergeConfigurations_baseDurationLonger_selectsBaseDuration() {
+        RateLimiterConfig config = new RateLimiterConfig();
+        RateLimiterConfig base = new RateLimiterConfig();
+        RateLimiterConfig override = new RateLimiterConfig();
+        base.setRefillDuration(Duration.ofMinutes(5));
+        override.setRefillDuration(Duration.ofSeconds(30));
+
+        RateLimiterConfig merged = config.mergeConfigurations(base, override);
+
+        assertEquals(Duration.ofMinutes(5), merged.getRefillDuration());
+    }
+
+    @Test
     @DisplayName("validateConfiguration: accepts valid values and rejects invalid ones")
     void validateConfiguration_validatesValues() {
         RateLimiterConfig config = new RateLimiterConfig();
@@ -175,6 +233,51 @@ public class RateLimiterConfigTest {
         config.setRefillDuration(Duration.ZERO);
         IllegalArgumentException durationEx = assertThrows(IllegalArgumentException.class, config::validateConfiguration);
         assertEquals("Refill duration must be positive", durationEx.getMessage());
+    }
+
+    @Test
+    @DisplayName("validateConfiguration: rejects null and negative values")
+    void validateConfiguration_rejectsNullAndNegativeValues() {
+        RateLimiterConfig config = new RateLimiterConfig();
+
+        config.setCapacity(null);
+        assertEquals("Capacity must be greater than 0",
+                assertThrows(IllegalArgumentException.class, config::validateConfiguration).getMessage());
+
+        config.setCapacity(-1L);
+        assertEquals("Capacity must be greater than 0",
+                assertThrows(IllegalArgumentException.class, config::validateConfiguration).getMessage());
+
+        config.setCapacity(10L);
+        config.setRefillRate(null);
+        assertEquals("Refill rate must be greater than 0",
+                assertThrows(IllegalArgumentException.class, config::validateConfiguration).getMessage());
+
+        config.setRefillRate(-1L);
+        assertEquals("Refill rate must be greater than 0",
+                assertThrows(IllegalArgumentException.class, config::validateConfiguration).getMessage());
+
+        config.setRefillRate(5L);
+        config.setRefillDuration(null);
+        assertEquals("Refill duration must be positive",
+                assertThrows(IllegalArgumentException.class, config::validateConfiguration).getMessage());
+
+        config.setRefillDuration(Duration.ofSeconds(-1));
+        assertEquals("Refill duration must be positive",
+                assertThrows(IllegalArgumentException.class, config::validateConfiguration).getMessage());
+    }
+
+    @Test
+    @DisplayName("loadConfigurationFromProperties: rejects malformed numeric properties")
+    void loadConfigurationFromProperties_invalidNumber_throws() {
+        RateLimiterConfig config = new RateLimiterConfig();
+        Map<String, Object> properties = Map.of("rate.limiter.default.capacity", "not-a-number");
+
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+                () -> config.loadConfigurationFromProperties(properties));
+
+        assertTrue(error.getMessage().startsWith("Invalid number format: not-a-number"));
+        assertInstanceOf(NumberFormatException.class, error.getCause());
     }
 
     @Test

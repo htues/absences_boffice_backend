@@ -5,12 +5,15 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hftamayo.absencesbobe.shared.web.error.RateLimiterError;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.github.bucket4j.Bucket;
+import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -147,6 +150,77 @@ public class RateLimiterAspectTest {
 
         assertEquals("Request context not available", error.getMessage());
         verifyNoInteractions(rateLimiterUtil, rateLimiterConfig, joinPoint);
+    }
+
+    @Test
+    @DisplayName("rateLimit: throws when HTTP request is missing")
+    void rateLimit_whenHttpRequestMissing_throws() {
+        ProceedingJoinPoint joinPoint = mock(ProceedingJoinPoint.class);
+        ServletRequestAttributes attributes = mock(ServletRequestAttributes.class);
+        RequestContextHolder.setRequestAttributes(attributes);
+
+        RateLimiterError error = assertThrows(RateLimiterError.class, () -> aspect.rateLimit(joinPoint));
+
+        assertEquals("HTTP request/response not available", error.getMessage());
+        verify(attributes).getRequest();
+        verify(attributes).getResponse();
+        verifyNoInteractions(rateLimiterUtil, rateLimiterConfig, joinPoint);
+    }
+
+    @Test
+    @DisplayName("rateLimit: throws when HTTP response is missing")
+    void rateLimit_whenHttpResponseMissing_throws() {
+        ProceedingJoinPoint joinPoint = mock(ProceedingJoinPoint.class);
+        ServletRequestAttributes attributes = mock(ServletRequestAttributes.class);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(attributes.getRequest()).thenReturn(request);
+        RequestContextHolder.setRequestAttributes(attributes);
+
+        RateLimiterError error = assertThrows(RateLimiterError.class, () -> aspect.rateLimit(joinPoint));
+
+        assertEquals("HTTP request/response not available", error.getMessage());
+        verify(attributes).getRequest();
+        verify(attributes).getResponse();
+        verifyNoInteractions(rateLimiterUtil, rateLimiterConfig, joinPoint, request);
+    }
+
+    @ParameterizedTest(name = "Authorization {0} resolves to {1}")
+    @CsvSource(value = {
+            "<absent>, ANONYMOUS",
+            "'   ', ANONYMOUS",
+            "Bearer ADMIN-token, ADMIN",
+            "Bearer USER-token, USER",
+            "Bearer service-token, ANONYMOUS"
+    }, nullValues = "<absent>")
+    @DisplayName("rateLimit: extracts all supported authorization roles")
+    void rateLimit_withAuthorizationHeader_extractsExpectedRole(String authorization, String expectedRole)
+            throws Throwable {
+        ProceedingJoinPoint joinPoint = mock(ProceedingJoinPoint.class);
+        MethodSignature signature = mock(MethodSignature.class);
+        Method method = TestHandlers.class.getDeclaredMethod("getActiveCompanies");
+        when(joinPoint.getSignature()).thenReturn(signature);
+        when(signature.getMethod()).thenReturn(method);
+        when(joinPoint.proceed()).thenReturn("ok");
+
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/companies");
+        if (authorization != null) {
+            request.addHeader("Authorization", authorization);
+        }
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request, response));
+
+        RateLimiterConfig combinedConfig = new RateLimiterConfig();
+        combinedConfig.setCapacity(5L);
+        combinedConfig.setRefillDuration(Duration.ofSeconds(30));
+        Bucket bucket = mock(Bucket.class);
+        when(rateLimiterConfig.getCombinedConfig("/api/v1/companies", expectedRole)).thenReturn(combinedConfig);
+        when(rateLimiterUtil.createBucket(combinedConfig)).thenReturn(bucket);
+        when(rateLimiterUtil.tryConsume(bucket, 1L)).thenReturn(true);
+
+        assertEquals("ok", aspect.rateLimit(joinPoint));
+
+        verify(rateLimiterConfig).getCombinedConfig("/api/v1/companies", expectedRole);
+        verify(joinPoint).proceed();
     }
 
     @Test

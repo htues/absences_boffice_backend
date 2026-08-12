@@ -5,6 +5,7 @@ import com.hftamayo.absencesbobe.shared.web.constants.ApiResponseDescriptor;
 import com.hftamayo.absencesbobe.shared.web.constants.ErrorApiResponse;
 import com.hftamayo.absencesbobe.shared.web.constants.SuccessApiResponse;
 import com.hftamayo.absencesbobe.shared.web.dto.ApiResponseDto;
+import com.hftamayo.absencesbobe.shared.web.error.ErrorLogEventDescriptor;
 import com.hftamayo.absencesbobe.shared.web.factory.ApiResponseFactory;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
@@ -91,5 +92,25 @@ class ApiResponseFactoryTest {
     @Test
     void responseError_nullDescriptor_returnsUnknown() {
         assertEquals(ErrorApiResponse.UNKNOWN_ERROR, ApiResponseFactory.responseError(null));
+    }
+
+    @Test
+    void responseError_descriptorWithNullType_returnsUnknown() {
+        ErrorLogEventDescriptor error = new ErrorLogEventDescriptor() {
+            @Override public ErrorApiResponse getType() { return null; }
+            @Override public String getDetail() { return "Missing error type"; }
+        };
+
+        assertEquals(ErrorApiResponse.UNKNOWN_ERROR, ApiResponseFactory.responseError(error));
+    }
+
+    @Test
+    void responseError_descriptorWithType_returnsItsType() {
+        ErrorLogEventDescriptor error = new ErrorLogEventDescriptor() {
+            @Override public ErrorApiResponse getType() { return ErrorApiResponse.NOT_FOUND; }
+            @Override public String getDetail() { return "Resource not found"; }
+        };
+
+        assertEquals(ErrorApiResponse.NOT_FOUND, ApiResponseFactory.responseError(error));
     }
 }
