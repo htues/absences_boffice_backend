@@ -1,7 +1,7 @@
 spring:
   config:
     activate:
-      on-profile: prod
+      on-profile: production
 
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST:pgdevelopment}:${POSTGRES_PORT:5432}/${POSTGRES_DB:absencesbo}
@@ -78,4 +78,4 @@ rate:
       refill-duration: PT1M
 
 app:
-  environment: prod
+  environment: production
