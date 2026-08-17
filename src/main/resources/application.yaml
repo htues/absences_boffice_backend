@@ -56,7 +56,7 @@ rate:
       refill-duration: PT1M
 
 frontend:
-  origins: ${FRONTEND_ORIGINS:http://localhost:5173}
+  origins: ${FRONTEND_ORIGINS:http://localhost:8041}
 
 # Common test user configuration
 test:
