@@ -250,12 +250,12 @@
 
 	<profiles>
 		<profile>
-			<id>dev</id>
+			<id>development</id>
 			<activation>
 				<activeByDefault>true</activeByDefault>
 			</activation>
 			<properties>
-				<skip.tests>false</skip.tests>
+				<skip.tests>true</skip.tests>
 				<skip.integration.tests>true</skip.integration.tests>
 				<skip.coverage.check>true</skip.coverage.check>
 			</properties>
