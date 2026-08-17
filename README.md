@@ -33,3 +33,13 @@ endpoints:
     refill-duration: PT30S
 ```
 
+## API Documentation
+
+Managed by SpringDoc OpenAPI which provides a Swagger UI integration. After add the dependency 
+Springdoc auto-generates the documentation from the MVC Controllers
+
+Once the application has been started, the UI is available at: 
+http://localhost:8080/swagger-ui/index.html
+
+The raw OpenAPI contract is available at:
+http://localhost:8080/v3/api-docs
