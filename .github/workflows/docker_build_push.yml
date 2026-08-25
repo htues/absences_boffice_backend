@@ -37,6 +37,7 @@ jobs:
           push: true
           tags: |
             hftamayo/absencesbobe:${{ env.IMAGE_TAG }}
+            hftamayo/absencesbobe:bedev
 
       - name: Notify Slack on successful image push
         continue-on-error: true
