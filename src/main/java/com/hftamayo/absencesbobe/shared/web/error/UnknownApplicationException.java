@@ -2,13 +2,13 @@ package com.hftamayo.absencesbobe.shared.web.error;
 
 import com.hftamayo.absencesbobe.shared.web.constants.ErrorApiResponse;
 
-public class UnknownError extends Exception implements ErrorLogEventDescriptor {
+public class UnknownApplicationException extends Exception implements ErrorLogEventDescriptor {
 
-    public UnknownError(String message) {
+    public UnknownApplicationException(String message) {
         super(message);
     }
 
-    public UnknownError(String message, Throwable cause) {
+    public UnknownApplicationException(String message, Throwable cause) {
         super(message, cause);
     }
 
