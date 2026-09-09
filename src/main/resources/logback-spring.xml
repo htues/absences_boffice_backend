@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <springProperty name="APP_NAME" source="spring.application.name" defaultValue="absences-backoffice"/>
+    <springProperty name="APP_ENV" source="app.environment" defaultValue="development"/>
+
+    <!-- Human-readable logs for local development -->
+    <appender name="CONSOLE_TEXT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] [%X{correlationId:-no-correlation-id}] %logger{36} - %msg%n%ex
+            </pattern>
+        </encoder>
+    </appender>
+
+    <!-- Structured JSON logs for staging/production/digester -->
+    <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp>
+                    <fieldName>timestamp</fieldName>
+                    <timeZone>UTC</timeZone>
+                </timestamp>
+
+                <logLevel>
+                    <fieldName>level</fieldName>
+                </logLevel>
+
+                <loggerName>
+                    <fieldName>logger</fieldName>
+                </loggerName>
+
+                <threadName>
+                    <fieldName>thread</fieldName>
+                </threadName>
+
+                <message>
+                    <fieldName>message</fieldName>
+                </message>
+
+                <mdc>
+                    <fieldName>mdc</fieldName>
+                </mdc>
+
+                <arguments>
+                    <fieldName>arguments</fieldName>
+                </arguments>
+
+                <stackTrace>
+                    <fieldName>stackTrace</fieldName>
+                </stackTrace>
+
+                <pattern>
+                    <pattern>
+                        {
+                        "service": "${APP_NAME}",
+                        "environment": "${APP_ENV}"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+    </appender>
+
+    <!-- Development: readable logs -->
+    <springProfile name="development">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE_TEXT"/>
+        </root>
+    </springProfile>
+
+    <!-- Test/CI: readable but still deterministic -->
+    <springProfile name="test,ci">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE_TEXT"/>
+        </root>
+    </springProfile>
+
+    <!-- Staging/Production: JSON logs for digester -->
+    <springProfile name="staging,production,prod">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE_JSON"/>
+        </root>
+    </springProfile>
+
+</configuration>
