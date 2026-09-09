@@ -1,7 +1,7 @@
 package com.hftamayo.absencesbobe.shared.web.factory;
 
 import com.hftamayo.absencesbobe.shared.web.correlation.CorrelationUtils;
-import com.hftamayo.absencesbobe.shared.web.dto.ErrorLogEventDto;
+import com.hftamayo.absencesbobe.shared.web.dto.ApplicationLogEventDto;
 import com.hftamayo.absencesbobe.shared.web.error.ErrorLogEventDescriptor;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.NoArgsConstructor;
@@ -9,13 +9,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public final class ErrorLogEventFactory {
 
-    public static ErrorLogEventDto mapErrorLogEvent(Class<?> controllerClass,
-                                                    ErrorLogEventDescriptor error,
-                                                    HttpServletRequest request) {
+    public static ApplicationLogEventDto mapErrorLogEvent(Class<?> controllerClass,
+                                                          ErrorLogEventDescriptor error,
+                                                          HttpServletRequest request) {
         String instance = CorrelationUtils.getInstance(controllerClass, request);
         String correlationId = CorrelationUtils.getCorrelationId(request);
 
-        return ErrorLogEventDto.builder()
+        return ApplicationLogEventDto.builder()
                 .title(error.getMessageKey())
                 .statusCode(error.getStatusCode())
                 .detail(error.getDetail())

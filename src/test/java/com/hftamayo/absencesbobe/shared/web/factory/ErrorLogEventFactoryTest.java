@@ -1,8 +1,7 @@
 package com.hftamayo.absencesbobe.features.shared.web.factory;
 
 import com.hftamayo.absencesbobe.shared.web.constants.CorrelationConstants;
-import com.hftamayo.absencesbobe.shared.web.constants.ErrorApiResponse;
-import com.hftamayo.absencesbobe.shared.web.dto.ErrorLogEventDto;
+import com.hftamayo.absencesbobe.shared.web.dto.ApplicationLogEventDto;
 import com.hftamayo.absencesbobe.shared.web.error.ErrorLogEventDescriptor;
 import com.hftamayo.absencesbobe.shared.web.factory.ErrorLogEventFactory;
 import org.junit.jupiter.api.Test;
@@ -27,7 +26,7 @@ class ErrorLogEventFactoryTest {
         request.setRequestURI("/api/companies/123");
         request.setAttribute(CorrelationConstants.ATTRIBUTE, "corr-id-123");
 
-        ErrorLogEventDto result = ErrorLogEventFactory.mapErrorLogEvent(
+        ApplicationLogEventDto result = ErrorLogEventFactory.mapErrorLogEvent(
                 CompanyController.class,
                 errorDescriptor,
                 request
@@ -53,7 +52,7 @@ class ErrorLogEventFactoryTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setRequestURI("/api/absences");
 
-        ErrorLogEventDto result = ErrorLogEventFactory.mapErrorLogEvent(
+        ApplicationLogEventDto result = ErrorLogEventFactory.mapErrorLogEvent(
                 AbsenceController.class,
                 errorDescriptor,
                 request
@@ -80,7 +79,7 @@ class ErrorLogEventFactoryTest {
         request.setRequestURI("/api/health");
         request.setAttribute(CorrelationConstants.ATTRIBUTE, "corr-id-500");
 
-        ErrorLogEventDto result = ErrorLogEventFactory.mapErrorLogEvent(
+        ApplicationLogEventDto result = ErrorLogEventFactory.mapErrorLogEvent(
                 null,
                 errorDescriptor,
                 request
@@ -107,7 +106,7 @@ class ErrorLogEventFactoryTest {
         request.setRequestURI("/api/companies");
         request.setAttribute(CorrelationConstants.ATTRIBUTE, "corr-id-conflict");
 
-        ErrorLogEventDto result = ErrorLogEventFactory.mapErrorLogEvent(
+        ApplicationLogEventDto result = ErrorLogEventFactory.mapErrorLogEvent(
                 CompanyController.class,
                 errorDescriptor,
                 request

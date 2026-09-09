@@ -5,7 +5,7 @@ import com.hftamayo.absencesbobe.shared.web.constants.ApiResponseDescriptor;
 import com.hftamayo.absencesbobe.shared.web.constants.ErrorApiResponse;
 import com.hftamayo.absencesbobe.shared.web.constants.SuccessApiResponse;
 import com.hftamayo.absencesbobe.shared.web.dto.ApiResponseDto;
-import com.hftamayo.absencesbobe.shared.web.dto.ErrorLogEventDto;
+import com.hftamayo.absencesbobe.shared.web.dto.ApplicationLogEventDto;
 import com.hftamayo.absencesbobe.shared.web.error.ErrorLogEventDescriptor;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.NoArgsConstructor;
@@ -47,7 +47,7 @@ public final class ApiResponseFactory {
      * Optional helper: builds the structured error event for logging/tracing.
      * Note: not returned to the frontend (since ApiResponseDto no longer includes an "error" field).
      */
-    public static ErrorLogEventDto buildErrorEvent(
+    public static ApplicationLogEventDto buildErrorEvent(
             Class<?> controllerClass,
             ErrorLogEventDescriptor error,
             HttpServletRequest request
