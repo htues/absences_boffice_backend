@@ -32,7 +32,7 @@ public final class ApiResponseFactory {
             return success(successCode, result.value(), cache);
         }
 
-        return error(resolveErrorResponse(result.error()), cache);
+        return error(ErrorResponseMapper.fromDescriptor(result.error()), cache);
     }
 
     /**
@@ -69,11 +69,5 @@ public final class ApiResponseFactory {
      */
     public static ResponseEntity<ApiResponseDto<?>> unknownError(Long cache) {
         return error(ErrorApiResponse.UNKNOWN_ERROR, cache);
-    }
-
-    private static ErrorApiResponse resolveErrorResponse(ApiResponseDescriptor descriptor) {
-        return descriptor instanceof ErrorApiResponse errorCode
-                ? errorCode
-                : ErrorApiResponse.UNKNOWN_ERROR;
     }
 }
