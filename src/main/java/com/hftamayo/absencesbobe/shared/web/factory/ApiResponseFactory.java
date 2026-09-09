@@ -5,9 +5,6 @@ import com.hftamayo.absencesbobe.shared.web.constants.ApiResponseDescriptor;
 import com.hftamayo.absencesbobe.shared.web.constants.ErrorApiResponse;
 import com.hftamayo.absencesbobe.shared.web.constants.SuccessApiResponse;
 import com.hftamayo.absencesbobe.shared.web.dto.ApiResponseDto;
-import com.hftamayo.absencesbobe.shared.web.dto.ApplicationLogEventDto;
-import com.hftamayo.absencesbobe.shared.web.error.ErrorLogEventDescriptor;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.NoArgsConstructor;
 import org.springframework.http.ResponseEntity;
 
@@ -18,7 +15,7 @@ public final class ApiResponseFactory {
 
     /**
      * Main factory method: maps a Result from the application layer into a HTTP response
-     * that matches the frontend contract (type/responseType, code/statusCode, resultMessage, data).
+     * that matches the frontend contract.
      */
     public static <T> ResponseEntity<ApiResponseDto<?>> fromResult(
             Result<T, ? extends ApiResponseDescriptor> result,
@@ -32,44 +29,51 @@ public final class ApiResponseFactory {
         }
 
         if (result.isSuccess()) {
-            ApiResponseDto<T> body = ApiResponseDto.response(successCode, result.value(), cache);
-            return ResponseEntity.status(successCode.getStatusCode()).body(body);
+            return success(successCode, result.value(), cache);
         }
 
-        ApiResponseDescriptor err = result.error();
-        ErrorApiResponse errorCode = (err instanceof ErrorApiResponse ec) ? ec : ErrorApiResponse.UNKNOWN_ERROR;
-
-        ApiResponseDto<Void> body = ApiResponseDto.response(errorCode, null, cache);
-        return ResponseEntity.status(errorCode.getStatusCode()).body(body);
+        return error(resolveErrorResponse(result.error()), cache);
     }
 
     /**
-     * Optional helper: builds the structured error event for logging/tracing.
-     * Note: not returned to the frontend (since ApiResponseDto no longer includes an "error" field).
+     * Convenience: success response.
      */
-    public static ApplicationLogEventDto buildErrorEvent(
-            Class<?> controllerClass,
-            ErrorLogEventDescriptor error,
-            HttpServletRequest request
+    public static <T> ResponseEntity<ApiResponseDto<?>> success(
+            SuccessApiResponse code,
+            T data,
+            Long cache
     ) {
-        return ErrorLogEventFactory.mapErrorLogEvent(controllerClass, error, request);
+        Objects.requireNonNull(code, "code must not be null");
+
+        ApiResponseDto<T> body = ApiResponseDto.response(code, data, cache);
+        return ResponseEntity.status(code.getStatusCode()).body(body);
     }
 
     /**
-     * Maps an ErrorLogEventDescriptor to the ErrorCode used in the response.
+     * Convenience: error response.
      */
-    public static ErrorApiResponse responseError(ErrorLogEventDescriptor error) {
-        return (error == null || error.getType() == null)
+    public static ResponseEntity<ApiResponseDto<?>> error(
+            ErrorApiResponse code,
+            Long cache
+    ) {
+        ErrorApiResponse safeCode = code == null
                 ? ErrorApiResponse.UNKNOWN_ERROR
-                : error.getType();
+                : code;
+
+        ApiResponseDto<Void> body = ApiResponseDto.response(safeCode, null, cache);
+        return ResponseEntity.status(safeCode.getStatusCode()).body(body);
     }
 
     /**
      * Convenience: unknown error response (500).
      */
     public static ResponseEntity<ApiResponseDto<?>> unknownError(Long cache) {
-        ErrorApiResponse code = ErrorApiResponse.UNKNOWN_ERROR;
-        ApiResponseDto<Void> body = ApiResponseDto.response(code, null, cache);
-        return ResponseEntity.status(code.getStatusCode()).body(body);
+        return error(ErrorApiResponse.UNKNOWN_ERROR, cache);
+    }
+
+    private static ErrorApiResponse resolveErrorResponse(ApiResponseDescriptor descriptor) {
+        return descriptor instanceof ErrorApiResponse errorCode
+                ? errorCode
+                : ErrorApiResponse.UNKNOWN_ERROR;
     }
 }
