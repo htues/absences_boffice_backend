@@ -6,6 +6,8 @@ import com.hftamayo.absencesbobe.shared.web.correlation.CorrelationUtils;
 import com.hftamayo.absencesbobe.shared.web.dto.ApplicationLogEventDto;
 import com.hftamayo.absencesbobe.shared.web.error.ErrorLogEventDescriptor;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import lombok.NoArgsConstructor;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
@@ -88,6 +90,47 @@ public final class ApplicationLogEventFactory {
                         "responseType", response.getResponseType(),
                         "errorCode", response.name()
                 ))
+                .build();
+    }
+
+    public static ApplicationLogEventDto fromConstraintViolationException(
+            Class<?> sourceClass,
+            ConstraintViolationException exception,
+            HttpServletRequest request
+    ) {
+        Map<String, Object> context = new LinkedHashMap<>();
+        context.put("responseType", ErrorApiResponse.VALIDATION_ERROR.getResponseType());
+        context.put("exception", exception.getClass().getSimpleName());
+        context.put("violationCount", exception.getConstraintViolations().size());
+
+        return baseBuilder(sourceClass, request)
+                .severity(SEVERITY_WARN)
+                .eventType(EVENT_TYPE_VALIDATION_ERROR)
+                .eventCode(ErrorApiResponse.VALIDATION_ERROR.getMessageKey())
+                .message("Request parameter validation failed")
+                .detail(exception.getMessage())
+                .statusCode(ErrorApiResponse.VALIDATION_ERROR.getStatusCode())
+                .context(context)
+                .build();
+    }
+
+    public static ApplicationLogEventDto fromUnreadableBodyException(
+            Class<?> sourceClass,
+            HttpMessageNotReadableException exception,
+            HttpServletRequest request
+    ) {
+        Map<String, Object> context = new LinkedHashMap<>();
+        context.put("responseType", ErrorApiResponse.VALIDATION_ERROR.getResponseType());
+        context.put("exception", exception.getClass().getSimpleName());
+
+        return baseBuilder(sourceClass, request)
+                .severity(SEVERITY_WARN)
+                .eventType(EVENT_TYPE_VALIDATION_ERROR)
+                .eventCode(ErrorApiResponse.VALIDATION_ERROR.getMessageKey())
+                .message("Malformed JSON request")
+                .detail(exception.getMessage())
+                .statusCode(ErrorApiResponse.VALIDATION_ERROR.getStatusCode())
+                .context(context)
                 .build();
     }
 
