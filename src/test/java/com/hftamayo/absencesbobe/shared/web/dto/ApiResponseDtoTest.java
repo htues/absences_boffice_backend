@@ -1,4 +1,4 @@
-package com.hftamayo.absencesbobe.features.shared.web.dto;
+package com.hftamayo.absencesbobe.shared.web.dto;
 
 import com.hftamayo.absencesbobe.shared.web.constants.ApiResponseDescriptor;
 import com.hftamayo.absencesbobe.shared.web.constants.ErrorApiResponse;
