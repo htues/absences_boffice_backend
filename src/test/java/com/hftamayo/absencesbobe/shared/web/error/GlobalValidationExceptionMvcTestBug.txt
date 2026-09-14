@@ -5,20 +5,19 @@ import com.hftamayo.absencesbobe.shared.web.dto.ApplicationLogEventDto;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Path;
-import jakarta.validation.Payload;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.*;
 
-import java.lang.annotation.ElementType;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -27,18 +26,26 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(controllers = GlobalValidationExceptionHandlerMvcTest.TestController.class)
-@Import(GlobalValidationExceptionHandler.class)
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
+@WebMvcTest
+@Import({
+        GlobalValidationExceptionHandler.class,
+        GlobalValidationExceptionHandlerMvcTest.TestController.class
+})
 class GlobalValidationExceptionHandlerMvcTest {
 
-    @MockBean
+    @MockitoBean
     private ApplicationEventLogger eventLogger;
 
-    private final MockMvc mockMvc;
+    @MockitoBean
+    private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 
-    GlobalValidationExceptionHandlerMvcTest(MockMvc mockMvc) {
-        this.mockMvc = mockMvc;
-    }
+    @Autowired
+    private MockMvc mockMvc;
 
     @Test
     void invalidRequestBodyReturns422ValidationResponseAndLogsWarnEvent() throws Exception {
@@ -114,9 +121,7 @@ class GlobalValidationExceptionHandlerMvcTest {
         mockMvc.perform(post("/test/body-validation")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {
-                                  "name":
-                                }
+                                {"name":{}}
                                 """))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.statusCode").value(422))
@@ -180,8 +185,7 @@ class GlobalValidationExceptionHandlerMvcTest {
         assertEquals("boom", throwable.getMessage());
     }
 
-    @Controller
-    @ResponseBody
+    @RestController
     static class TestController {
 
         @PostMapping("/test/body-validation")
