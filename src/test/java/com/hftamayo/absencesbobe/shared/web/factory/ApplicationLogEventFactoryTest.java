@@ -8,6 +8,16 @@ import com.hftamayo.absencesbobe.shared.web.error.ErrorLogEventDescriptor;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+
+import java.util.List;
+import java.util.Set;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -229,6 +239,174 @@ class ApplicationLogEventFactoryTest {
         assertNull(result.path());
         assertNull(result.httpMethod());
         assertEquals("CompanyController", result.source());
+    }
+
+    @Test
+    void fromValidationException_returnsValidationErrorEvent() {
+        FieldError fieldError = new FieldError("request", "name", "Name is required");
+        BindingResult bindingResult = mock(BindingResult.class);
+        when(bindingResult.getFieldErrors()).thenReturn(List.of(fieldError));
+        when(bindingResult.getFieldErrorCount()).thenReturn(1);
+
+        MethodArgumentNotValidException exception =
+                new MethodArgumentNotValidException(null, bindingResult);
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setMethod("POST");
+        request.setRequestURI("/api/companies");
+        request.setAttribute(CorrelationConstants.ATTRIBUTE, "corr-id-validation");
+
+        ApplicationLogEventDto result = ApplicationLogEventFactory.fromValidationException(
+                CompanyController.class,
+                exception,
+                request
+        );
+
+        assertNotNull(result);
+        assertNotNull(result.timestamp());
+        assertEquals("WARN", result.severity());
+        assertEquals("VALIDATION_ERROR", result.eventType());
+        assertEquals("VALIDATION_ERROR", result.eventCode());
+        assertEquals("Request body validation failed", result.message());
+        assertEquals("Request body validation failed", result.detail());
+        assertEquals(422, result.statusCode());
+        assertEquals("corr-id-validation", result.correlationId());
+        assertEquals("/api/companies", result.path());
+        assertEquals("POST", result.httpMethod());
+        assertEquals("CompanyController", result.source());
+        assertEquals("error", result.context().get("responseType"));
+        assertEquals(MethodArgumentNotValidException.class.getSimpleName(), result.context().get("exception"));
+        assertEquals(1, result.context().get("fieldErrorCount"));
+    }
+
+    @Test
+    void fromConstraintViolationException_returnsValidationErrorEvent() {
+        @SuppressWarnings("unchecked")
+        ConstraintViolation<Object> violation = mock(ConstraintViolation.class);
+
+        ConstraintViolationException exception =
+                new ConstraintViolationException("Parameter validation failed", Set.of(violation));
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setMethod("GET");
+        request.setRequestURI("/api/companies");
+        request.setAttribute(CorrelationConstants.ATTRIBUTE, "corr-id-constraint");
+
+        ApplicationLogEventDto result = ApplicationLogEventFactory.fromConstraintViolationException(
+                CompanyController.class,
+                exception,
+                request
+        );
+
+        assertNotNull(result);
+        assertNotNull(result.timestamp());
+        assertEquals("WARN", result.severity());
+        assertEquals("VALIDATION_ERROR", result.eventType());
+        assertEquals("VALIDATION_ERROR", result.eventCode());
+        assertEquals("Request parameter validation failed", result.message());
+        assertEquals("Parameter validation failed", result.detail());
+        assertEquals(422, result.statusCode());
+        assertEquals("corr-id-constraint", result.correlationId());
+        assertEquals("/api/companies", result.path());
+        assertEquals("GET", result.httpMethod());
+        assertEquals("CompanyController", result.source());
+        assertEquals("error", result.context().get("responseType"));
+        assertEquals(ConstraintViolationException.class.getSimpleName(), result.context().get("exception"));
+        assertEquals(1, result.context().get("violationCount"));
+    }
+
+    @Test
+    void fromUnreadableBodyException_returnsValidationErrorEvent() {
+        HttpMessageNotReadableException exception =
+                new HttpMessageNotReadableException("Malformed JSON request");
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setMethod("POST");
+        request.setRequestURI("/api/companies");
+        request.setAttribute(CorrelationConstants.ATTRIBUTE, "corr-id-malformed");
+
+        ApplicationLogEventDto result = ApplicationLogEventFactory.fromUnreadableBodyException(
+                CompanyController.class,
+                exception,
+                request
+        );
+
+        assertNotNull(result);
+        assertNotNull(result.timestamp());
+        assertEquals("WARN", result.severity());
+        assertEquals("VALIDATION_ERROR", result.eventType());
+        assertEquals("VALIDATION_ERROR", result.eventCode());
+        assertEquals("Malformed JSON request", result.message());
+        assertEquals("Malformed JSON request", result.detail());
+        assertEquals(422, result.statusCode());
+        assertEquals("corr-id-malformed", result.correlationId());
+        assertEquals("/api/companies", result.path());
+        assertEquals("POST", result.httpMethod());
+        assertEquals("CompanyController", result.source());
+        assertEquals("error", result.context().get("responseType"));
+        assertEquals(HttpMessageNotReadableException.class.getSimpleName(), result.context().get("exception"));
+    }
+
+    @Test
+    void fromUnknownException_withNullException_returnsUnknownErrorEventWithoutExceptionContext() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setMethod("GET");
+        request.setRequestURI("/api/companies");
+        request.setAttribute(CorrelationConstants.ATTRIBUTE, "corr-id-null-exception");
+
+        ApplicationLogEventDto result = ApplicationLogEventFactory.fromUnknownException(
+                CompanyController.class,
+                null,
+                request
+        );
+
+        assertNotNull(result);
+        assertNotNull(result.timestamp());
+        assertEquals("ERROR", result.severity());
+        assertEquals("UNKNOWN_ERROR", result.eventType());
+        assertEquals("UNKNOWN_ERROR", result.eventCode());
+        assertEquals("Unexpected application error", result.message());
+        assertNull(result.detail());
+        assertEquals(500, result.statusCode());
+        assertEquals("corr-id-null-exception", result.correlationId());
+        assertEquals("/api/companies", result.path());
+        assertEquals("GET", result.httpMethod());
+        assertEquals("CompanyController", result.source());
+        assertEquals("error", result.context().get("responseType"));
+        assertFalse(result.context().containsKey("exception"));
+    }
+
+    @Test
+    void fromBusinessException_whenDescriptorTypeIsNull_fallsBackToUnknownError() {
+        ErrorLogEventDescriptor errorDescriptor = mock(ErrorLogEventDescriptor.class);
+        when(errorDescriptor.getType()).thenReturn(null);
+        when(errorDescriptor.getDetail()).thenReturn("Descriptor type is null");
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setMethod("PATCH");
+        request.setRequestURI("/api/companies/123");
+        request.setAttribute(CorrelationConstants.ATTRIBUTE, "corr-id-null-type");
+
+        ApplicationLogEventDto result = ApplicationLogEventFactory.fromBusinessException(
+                CompanyController.class,
+                errorDescriptor,
+                request
+        );
+
+        assertNotNull(result);
+        assertNotNull(result.timestamp());
+        assertEquals("WARN", result.severity());
+        assertEquals("BUSINESS_ERROR", result.eventType());
+        assertEquals("UNKNOWN_ERROR", result.eventCode());
+        assertEquals("UNKNOWN_ERROR", result.message());
+        assertEquals("Descriptor type is null", result.detail());
+        assertEquals(500, result.statusCode());
+        assertEquals("corr-id-null-type", result.correlationId());
+        assertEquals("/api/companies/123", result.path());
+        assertEquals("PATCH", result.httpMethod());
+        assertEquals("CompanyController", result.source());
+        assertEquals("error", result.context().get("responseType"));
+        assertEquals("UNKNOWN_ERROR", result.context().get("errorCode"));
     }
 
     static class CompanyController {
