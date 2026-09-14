@@ -66,7 +66,7 @@ public final class ApplicationLogEventFactory {
                 .eventType(EVENT_TYPE_VALIDATION_ERROR)
                 .eventCode(ErrorApiResponse.VALIDATION_ERROR.getMessageKey())
                 .message("Request body validation failed")
-                .detail(exception.getMessage())
+                .detail("Request body validation failed")
                 .statusCode(ErrorApiResponse.VALIDATION_ERROR.getStatusCode())
                 .context(context)
                 .build();
