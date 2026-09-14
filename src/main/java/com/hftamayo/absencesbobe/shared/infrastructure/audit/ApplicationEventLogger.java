@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Slf4j
@@ -64,20 +65,21 @@ public class ApplicationEventLogger {
             return Map.of();
         }
 
-        return Map.ofEntries(
-                Map.entry("timestamp", event.timestamp()),
-                Map.entry("severity", event.severity()),
-                Map.entry("eventType", event.eventType()),
-                Map.entry("eventCode", event.eventCode()),
-                Map.entry("message", event.message()),
-                Map.entry("statusCode", event.statusCode()),
-                Map.entry("correlationId", event.correlationId()),
-                Map.entry("path", event.path()),
-                Map.entry("httpMethod", event.httpMethod()),
-                Map.entry("source", event.source()),
-                Map.entry("detail", event.detail()),
-                Map.entry("traceId", event.traceId()),
-                Map.entry("context", event.context() == null ? Map.of() : event.context())
-        );
+        Map<String, Object> arguments = new LinkedHashMap<>();
+        arguments.put("timestamp", event.timestamp());
+        arguments.put("severity", event.severity());
+        arguments.put("eventType", event.eventType());
+        arguments.put("eventCode", event.eventCode());
+        arguments.put("message", event.message());
+        arguments.put("statusCode", event.statusCode());
+        arguments.put("correlationId", event.correlationId());
+        arguments.put("path", event.path());
+        arguments.put("httpMethod", event.httpMethod());
+        arguments.put("source", event.source());
+        arguments.put("detail", event.detail());
+        arguments.put("traceId", event.traceId());
+        arguments.put("context", event.context() == null ? Map.of() : event.context());
+
+        return arguments;
     }
 }
