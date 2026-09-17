@@ -67,4 +67,4 @@ test:
 app:
   environment: ${EXECUTION_MODE:development}
   logging:
-    console-format: json
+    console-format: ${APP_LOGGING_CONSOLE_FORMAT:text}

@@ -1,5 +1,6 @@
 package com.hftamayo.absencesbobe.shared.infrastructure.audit;
 
+import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.OutputStreamAppender;
@@ -9,19 +10,19 @@ import com.hftamayo.absencesbobe.shared.web.dto.ApplicationLogEventDto;
 import net.logstash.logback.composite.loggingevent.ArgumentsJsonProvider;
 import net.logstash.logback.composite.loggingevent.LoggingEventFormattedTimestampJsonProvider;
 import net.logstash.logback.composite.loggingevent.LoggingEventJsonProviders;
+import net.logstash.logback.composite.loggingevent.LoggingEventPatternJsonProvider;
+import net.logstash.logback.composite.loggingevent.LoggingEventThreadNameJsonProvider;
 import net.logstash.logback.composite.loggingevent.LogLevelJsonProvider;
 import net.logstash.logback.composite.loggingevent.LoggerNameJsonProvider;
 import net.logstash.logback.composite.loggingevent.MdcJsonProvider;
 import net.logstash.logback.composite.loggingevent.MessageJsonProvider;
 import net.logstash.logback.composite.loggingevent.StackTraceJsonProvider;
-import net.logstash.logback.composite.loggingevent.ThreadNameJsonProvider;
 import net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import net.logstash.logback.composite.loggingevent.LoggingEventPatternJsonProvider;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
@@ -50,6 +51,9 @@ class JsonLogSmokeIT {
     @Test
     void configuredProfileEmitsJsonLogs() throws Exception {
         Logger logger = (Logger) LoggerFactory.getLogger(ApplicationEventLogger.class);
+        Level previousLevel = logger.getLevel();
+        boolean previousAdditive = logger.isAdditive();
+
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
         LoggingEventCompositeJsonEncoder encoder = jsonEncoder(logger);
@@ -58,9 +62,13 @@ class JsonLogSmokeIT {
         appender.setContext(logger.getLoggerContext());
         appender.setEncoder(encoder);
         appender.setOutputStream(outputStream);
+        appender.setImmediateFlush(true);
 
         encoder.start();
         appender.start();
+
+        logger.setLevel(Level.INFO);
+        logger.setAdditive(false);
         logger.addAppender(appender);
 
         try {
@@ -112,6 +120,8 @@ class JsonLogSmokeIT {
             assertEquals("JSON_LOG_SMOKE_TEST", mdc.get("eventCode").asText());
         } finally {
             logger.detachAppender(appender);
+            logger.setLevel(previousLevel);
+            logger.setAdditive(previousAdditive);
             appender.stop();
             encoder.stop();
         }
@@ -132,7 +142,7 @@ class JsonLogSmokeIT {
         loggerNameProvider.setFieldName("logger");
         providers.addLoggerName(loggerNameProvider);
 
-        ThreadNameJsonProvider threadNameProvider = new ThreadNameJsonProvider();
+        LoggingEventThreadNameJsonProvider threadNameProvider = new LoggingEventThreadNameJsonProvider();
         threadNameProvider.setFieldName("thread");
         providers.addThreadName(threadNameProvider);
 
@@ -146,6 +156,7 @@ class JsonLogSmokeIT {
 
         ArgumentsJsonProvider argumentsProvider = new ArgumentsJsonProvider();
         argumentsProvider.setFieldName("arguments");
+        argumentsProvider.setIncludeNonStructuredArguments(true);
         providers.addArguments(argumentsProvider);
 
         StackTraceJsonProvider stackTraceProvider = new StackTraceJsonProvider();

@@ -45,6 +45,7 @@
 
                 <arguments>
                     <fieldName>arguments</fieldName>
+                    <includeNonStructuredArguments>true</includeNonStructuredArguments>
                 </arguments>
 
                 <stackTrace>
