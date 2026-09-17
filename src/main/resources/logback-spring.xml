@@ -3,6 +3,7 @@
 
     <springProperty name="APP_NAME" source="spring.application.name" defaultValue="absences-backoffice"/>
     <springProperty name="APP_ENV" source="app.environment" defaultValue="development"/>
+    <springProperty name="CONSOLE_FORMAT" source="app.logging.console-format" defaultValue="text"/>
 
     <!-- Human-readable logs for local development -->
     <appender name="CONSOLE_TEXT" class="ch.qos.logback.core.ConsoleAppender">
@@ -62,25 +63,18 @@
         </encoder>
     </appender>
 
-    <!-- Development: readable logs -->
-    <springProfile name="development">
-        <root level="INFO">
-            <appender-ref ref="CONSOLE_TEXT"/>
-        </root>
-    </springProfile>
-
-    <!-- Test/CI: readable but still deterministic -->
-    <springProfile name="test,ci">
-        <root level="INFO">
-            <appender-ref ref="CONSOLE_TEXT"/>
-        </root>
-    </springProfile>
-
-    <!-- Staging/Production: JSON logs for digester -->
-    <springProfile name="staging,production,prod">
-        <root level="INFO">
-            <appender-ref ref="CONSOLE_JSON"/>
-        </root>
-    </springProfile>
+    <!-- Explicit console format override for smoke tests and deployments -->
+    <if condition='property("CONSOLE_FORMAT").equalsIgnoreCase("json")'>
+        <then>
+            <root level="INFO">
+                <appender-ref ref="CONSOLE_JSON"/>
+            </root>
+        </then>
+        <else>
+            <root level="INFO">
+                <appender-ref ref="CONSOLE_TEXT"/>
+            </root>
+        </else>
+    </if>
 
 </configuration>

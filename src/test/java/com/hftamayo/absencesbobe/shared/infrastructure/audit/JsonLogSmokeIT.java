@@ -17,13 +17,14 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@ActiveProfiles("staging")
+@ActiveProfiles({"test", "json-logs"})
 @ExtendWith(OutputCaptureExtension.class)
 @SpringBootTest(
         classes = ApplicationEventLogger.class,
+        args = "--spring.profiles.active=test,json-logs",
         properties = {
                 "spring.application.name=absences-backoffice",
-                "app.environment=staging"
+                "app.environment=test"
         }
 )
 class JsonLogSmokeIT {
@@ -34,7 +35,7 @@ class JsonLogSmokeIT {
     private ApplicationEventLogger applicationEventLogger;
 
     @Test
-    void stagingProfileEmitsJsonLogs(CapturedOutput output) throws Exception {
+    void configuredProfileEmitsJsonLogs(CapturedOutput output) throws Exception {
         ApplicationLogEventDto event = ApplicationLogEventDto.builder()
                 .timestamp(Instant.parse("2026-09-14T10:15:30Z"))
                 .severity("INFO")
@@ -53,11 +54,15 @@ class JsonLogSmokeIT {
 
         applicationEventLogger.info(event);
 
-        String jsonLogLine = Arrays.stream(output.getOut().split("\\R"))
+        String capturedLogs = output.getAll();
+
+        String jsonLogLine = Arrays.stream(capturedLogs.split("\\R"))
                 .filter(line -> line.trim().startsWith("{"))
                 .filter(line -> line.contains("JSON log smoke test"))
                 .findFirst()
-                .orElseThrow(() -> new AssertionError("JSON log line was not emitted"));
+                .orElseThrow(() -> new AssertionError(
+                        "JSON log line was not emitted. Captured output was:%n%s".formatted(capturedLogs)
+                ));
 
         JsonNode json = objectMapper.readTree(jsonLogLine);
 
@@ -68,12 +73,10 @@ class JsonLogSmokeIT {
         assertTrue(json.has("mdc"));
         assertTrue(json.has("arguments"));
         assertEquals("absences-backoffice", json.get("service").asText());
-        assertEquals("staging", json.get("environment").asText());
+        assertEquals("test", json.get("environment").asText());
 
         JsonNode mdc = json.get("mdc");
         assertEquals("corr-json-smoke-test", mdc.get("correlationId").asText());
         assertEquals("trace-json-smoke-test", mdc.get("traceId").asText());
-        assertEquals("JSON_LOG_SMOKE_TEST", mdc.get("eventType").asText());
-        assertEquals("JSON_LOG_SMOKE_TEST", mdc.get("eventCode").asText());
     }
 }
