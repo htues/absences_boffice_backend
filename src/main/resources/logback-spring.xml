@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <springProperty name="APP_NAME" source="spring.application.name" defaultValue="absences-backoffice"/>
+    <springProperty name="APP_ENV" source="app.environment" defaultValue="development"/>
+    <springProperty name="CONSOLE_FORMAT" source="app.logging.console-format" defaultValue="text"/>
+
+    <!-- Human-readable logs for local development and default execution -->
+    <appender name="CONSOLE_TEXT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] [%X{correlationId:-no-correlation-id}] %logger{36} - %msg%n%ex
+            </pattern>
+        </encoder>
+    </appender>
+
+    <!-- Structured JSON logs for environments/tools that require log ingestion -->
+    <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp>
+                    <fieldName>timestamp</fieldName>
+                    <timeZone>UTC</timeZone>
+                </timestamp>
+
+                <logLevel>
+                    <fieldName>level</fieldName>
+                </logLevel>
+
+                <loggerName>
+                    <fieldName>logger</fieldName>
+                </loggerName>
+
+                <threadName>
+                    <fieldName>thread</fieldName>
+                </threadName>
+
+                <message>
+                    <fieldName>message</fieldName>
+                </message>
+
+                <mdc>
+                    <fieldName>mdc</fieldName>
+                </mdc>
+
+                <arguments>
+                    <fieldName>arguments</fieldName>
+                    <includeNonStructuredArguments>true</includeNonStructuredArguments>
+                </arguments>
+
+                <stackTrace>
+                    <fieldName>stackTrace</fieldName>
+                </stackTrace>
+
+                <pattern>
+                    <pattern>
+                        {
+                        "service": "${APP_NAME}",
+                        "environment": "${APP_ENV}"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+    </appender>
+
+    <!-- Console format is selected by app.logging.console-format -->
+    <if condition='"json".equalsIgnoreCase(property("CONSOLE_FORMAT"))'>
+        <then>
+            <root level="INFO">
+                <appender-ref ref="CONSOLE_JSON"/>
+            </root>
+        </then>
+        <else>
+            <root level="INFO">
+                <appender-ref ref="CONSOLE_TEXT"/>
+            </root>
+        </else>
+    </if>
+
+</configuration>

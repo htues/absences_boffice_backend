@@ -107,7 +107,17 @@
 			<artifactId>bucket4j-core</artifactId>
 			<version>8.7.0</version>
 		</dependency>
-
+		<!-- Logstash Logback Encoder for structured logging -->
+		<dependency>
+			<groupId>net.logstash.logback</groupId>
+			<artifactId>logstash-logback-encoder</artifactId>
+			<version>8.0</version>
+		</dependency>
+		<!-- Logback conditional processing for logback-spring.xml -->
+		<dependency>
+			<groupId>org.codehaus.janino</groupId>
+			<artifactId>janino</artifactId>
+		</dependency>
 		<!-- Testing -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

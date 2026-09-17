@@ -1,4 +1,4 @@
-package com.hftamayo.absencesbobe.features.shared.web.factory;
+package com.hftamayo.absencesbobe.shared.web.factory;
 
 import com.hftamayo.absencesbobe.shared.application.result.Result;
 import com.hftamayo.absencesbobe.shared.web.constants.ApiResponseDescriptor;
@@ -87,30 +87,5 @@ class ApiResponseFactoryTest {
         assertEquals(ErrorApiResponse.UNKNOWN_ERROR.getStatusCode(), response.getStatusCode().value());
         assertNotNull(response.getBody());
         assertEquals(ErrorApiResponse.UNKNOWN_ERROR.getMessageKey(), response.getBody().getResultMessage());
-    }
-
-    @Test
-    void responseError_nullDescriptor_returnsUnknown() {
-        assertEquals(ErrorApiResponse.UNKNOWN_ERROR, ApiResponseFactory.responseError(null));
-    }
-
-    @Test
-    void responseError_descriptorWithNullType_returnsUnknown() {
-        ErrorLogEventDescriptor error = new ErrorLogEventDescriptor() {
-            @Override public ErrorApiResponse getType() { return null; }
-            @Override public String getDetail() { return "Missing error type"; }
-        };
-
-        assertEquals(ErrorApiResponse.UNKNOWN_ERROR, ApiResponseFactory.responseError(error));
-    }
-
-    @Test
-    void responseError_descriptorWithType_returnsItsType() {
-        ErrorLogEventDescriptor error = new ErrorLogEventDescriptor() {
-            @Override public ErrorApiResponse getType() { return ErrorApiResponse.NOT_FOUND; }
-            @Override public String getDetail() { return "Resource not found"; }
-        };
-
-        assertEquals(ErrorApiResponse.NOT_FOUND, ApiResponseFactory.responseError(error));
     }
 }

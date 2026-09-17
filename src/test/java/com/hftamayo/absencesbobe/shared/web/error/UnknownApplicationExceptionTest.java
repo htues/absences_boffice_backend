@@ -6,11 +6,11 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
-public class UnknownErrorTest {
+public class UnknownApplicationExceptionTest {
 
     @Test
     void constructor_withMessage_setsMessageAndDescriptorValues() {
-        UnknownError error = new UnknownError("Something went wrong");
+        UnknownApplicationException error = new UnknownApplicationException("Something went wrong");
 
         assertEquals("Something went wrong", error.getMessage());
         assertEquals(ErrorApiResponse.UNKNOWN_ERROR, error.getType());
@@ -23,7 +23,7 @@ public class UnknownErrorTest {
     @Test
     void constructor_withMessageAndCause_setsCauseAndMessage() {
         Throwable cause = new IllegalStateException("root cause");
-        UnknownError error = new UnknownError("Something went wrong", cause);
+        UnknownApplicationException error = new UnknownApplicationException("Something went wrong", cause);
 
         assertEquals("Something went wrong", error.getMessage());
         assertSame(cause, error.getCause());
