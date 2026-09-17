@@ -5,7 +5,7 @@
     <springProperty name="APP_ENV" source="app.environment" defaultValue="development"/>
     <springProperty name="CONSOLE_FORMAT" source="app.logging.console-format" defaultValue="text"/>
 
-    <!-- Human-readable logs for local development -->
+    <!-- Human-readable logs for local development and default execution -->
     <appender name="CONSOLE_TEXT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>
@@ -14,7 +14,7 @@
         </encoder>
     </appender>
 
-    <!-- Structured JSON logs for staging/production/digester -->
+    <!-- Structured JSON logs for environments/tools that require log ingestion -->
     <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
             <providers>
@@ -63,8 +63,8 @@
         </encoder>
     </appender>
 
-    <!-- Explicit console format override for smoke tests and deployments -->
-    <if condition='property("CONSOLE_FORMAT").equalsIgnoreCase("json")'>
+    <!-- Console format is selected by app.logging.console-format -->
+    <if condition='"json".equalsIgnoreCase(property("CONSOLE_FORMAT"))'>
         <then>
             <root level="INFO">
                 <appender-ref ref="CONSOLE_JSON"/>
