@@ -57,6 +57,28 @@ class CorrelationIdFilterTest {
     }
 
     @Test
+    void doFilter_whenHeaderBlank_generatesCorrelationId() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader(CorrelationConstants.HEADER, "   ");
+
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicReference<String> mdcValueInsideChain = new AtomicReference<>();
+
+        FilterChain chain = (servletRequest, servletResponse) ->
+                mdcValueInsideChain.set(MDC.get(CorrelationConstants.MDC_KEY));
+
+        filter.doFilter(request, response, chain);
+
+        String correlationId = response.getHeader(CorrelationConstants.HEADER);
+
+        assertNotNull(correlationId);
+        assertDoesNotThrow(() -> UUID.fromString(correlationId));
+        assertEquals(correlationId, request.getAttribute(CorrelationConstants.ATTRIBUTE));
+        assertEquals(correlationId, mdcValueInsideChain.get());
+        assertNull(MDC.get(CorrelationConstants.MDC_KEY));
+    }
+
+    @Test
     void doFilter_whenChainThrows_stillClearsMdc() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader(CorrelationConstants.HEADER, "corr-error");
