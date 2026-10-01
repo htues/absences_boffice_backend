@@ -37,6 +37,8 @@
 		<testcontainers.version>1.20.4</testcontainers.version>
 		<postgresql.version>42.7.12</postgresql.version>
 		<jacoco.version>0.8.15</jacoco.version>
+		<jackson-core.version>2.22.3</jackson-core.version>
+		<jackson-databind.version>2.22.3</jackson-databind.version>
 		<argLine></argLine>
 	</properties>
 
@@ -143,6 +145,16 @@
 
 	<dependencyManagement>
 	<dependencies>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>${jackson-core.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>${jackson-databind.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.tomcat.embed</groupId>
 			<artifactId>tomcat-embed-core</artifactId>
