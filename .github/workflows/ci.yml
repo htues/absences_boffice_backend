@@ -3,17 +3,23 @@ name: CI
 on:
   pull_request:
     branches:
-      - main
+    - main
   push:
     branches:
-      - main
+    - main
     paths:
-      - "src/**"
-      - "pom.xml"
-      - ".mvn/**"
-      - "mvnw"
-      - "mvnw.cmd"
-      - ".github/workflows/ci.yml"
+    - "src/**"
+    - "pom.xml"
+    - ".mvn/**"
+    - "mvnw"
+    - "mvnw.cmd"
+    - ".github/workflows/ci.yml"
+  workflow_dispatch:
+
+
+permissions:
+  actions: read
+  contents: read
 
 jobs:
   test-and-scan:
@@ -25,61 +31,60 @@ jobs:
       contents: read
 
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+    - name: Checkout source
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-      - name: Gitleaks scan
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Gitleaks scan
+      uses: gitleaks/gitleaks-action@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: OWASP Dependency-Check
-        uses: dependency-check/Dependency-Check_Action@main
-        env:
-          JAVA_HOME: /opt/jdk
-        with:
-          project: 'absencesbobe'
-          path: '.'
-          format: 'HTML'
-          out: 'reports'
-          args: >
-            --failOnCVSS 7
-            --enableRetired
+    - name: OWASP Dependency-Check
+      uses: dependency-check/Dependency-Check_Action@main
+      env:
+        JAVA_HOME: /opt/jdk
+      with:
+        project: 'absencesbobe'
+        path: '.'
+        format: 'HTML'
+        out: 'reports'
+        args: >
+          --failOnCVSS 7 --enableRetired
 
-      - name: Set up Java 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 21
-          cache: maven
+    - name: Set up Java 21
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: 21
+        cache: maven
 
-      - name: Make Maven wrapper executable
-        run: chmod +x mvnw
+    - name: Make Maven wrapper executable
+      run: chmod +x mvnw
 
-      - name: Build and Test with Maven verify
-        run: ./mvnw clean verify -Pci -Dspring.profiles.active=test
+    - name: Build and Test with Maven verify
+      run: ./mvnw clean verify -Pci -Dspring.profiles.active=test
 
-      - name: Upload JaCoCo report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: jacoco-report
-          path: target/site/jacoco
+    - name: Upload JaCoCo report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: jacoco-report
+        path: target/site/jacoco
 
-      - name: Run Trivy filesystem scan
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: fs
-          scan-ref: .
-          format: table
-          severity: CRITICAL,HIGH
-          exit-code: 1
+    - name: Run Trivy filesystem scan
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: fs
+        scan-ref: .
+        format: table
+        severity: CRITICAL,HIGH
+        exit-code: 1
 
-      - name: Upload Dependency-Check report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: DepCheck report
-          path: reports
+    - name: Upload Dependency-Check report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: DepCheck report
+        path: reports
