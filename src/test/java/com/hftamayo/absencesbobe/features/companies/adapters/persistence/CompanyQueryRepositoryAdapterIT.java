@@ -3,6 +3,7 @@ package com.hftamayo.absencesbobe.features.companies.adapters.persistence;
 import com.hftamayo.absencesbobe.features.companies.domain.Company;
 import com.hftamayo.absencesbobe.shared.infrastructure.audit.AuditorAwareConfig;
 import com.hftamayo.absencesbobe.shared.test.AbstractPostgresIT;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.UUID;
@@ -30,6 +32,14 @@ class CompanyQueryRepositoryAdapterIT extends AbstractPostgresIT {
 
     @Autowired
     private CompanySpringDataRepository jpaRepository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @BeforeEach
+    void cleanDatabase() {
+        jdbcTemplate.execute("TRUNCATE TABLE companies RESTART IDENTITY CASCADE");
+    }
 
     @Test
     @DisplayName("getActiveCompanies returns only active and non-deleted companies")
@@ -84,10 +94,9 @@ class CompanyQueryRepositoryAdapterIT extends AbstractPostgresIT {
 
         Page<Company> result = adapter.getActiveCompanies(PageRequest.of(0, 10));
 
-        assertThat(result.getContent()).hasSizeGreaterThanOrEqualTo(1);
-
         assertThat(result.getContent())
-                .anySatisfy(company -> {
+                .singleElement()
+                .satisfies(company -> {
                     assertThat(company.getId()).isEqualTo(savedEntity.getId());
                     assertThat(company.getName()).startsWith("Acme-");
                     assertThat(company.getDescription()).isEqualTo("Description for Acme");

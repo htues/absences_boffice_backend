@@ -3,11 +3,13 @@ package com.hftamayo.absencesbobe.features.companies.adapters.persistence;
 import com.hftamayo.absencesbobe.features.companies.domain.Company;
 import com.hftamayo.absencesbobe.shared.infrastructure.audit.AuditorAwareConfig;
 import com.hftamayo.absencesbobe.shared.test.AbstractPostgresIT;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Optional;
@@ -29,6 +31,14 @@ class CompanyCommandRepositoryAdapterIT extends AbstractPostgresIT {
 
     @Autowired
     private CompanySpringDataRepository jpaRepository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @BeforeEach
+    void cleanDatabase() {
+        jdbcTemplate.execute("TRUNCATE TABLE companies RESTART IDENTITY CASCADE");
+    }
 
     @Test
     @DisplayName("save persists company and returns mapped domain object")
